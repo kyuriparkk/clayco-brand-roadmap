@@ -650,22 +650,23 @@ dialog#drawer::backdrop {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 6px;
+  gap: 0;
+  border-top: 1px solid var(--line);
 }
 
 .substep {
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-bottom: 1px solid var(--line);
 }
 
-.substep.is-current { border-color: var(--red-dark); background: var(--red-soft); }
+.substep.is-current { background: var(--red-soft); }
 .substep.is-current .stitle { color: var(--red-dark); }
+.substep.is-current .substep-head { padding-left: 7px; border-left: 3px solid var(--red-dark); }
 
 .substep-head {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 10px 10px 10px 0;
   font-size: 13px;
   font-weight: 600;
   color: var(--ink);
@@ -678,7 +679,7 @@ details.substep > summary.substep-head::-webkit-details-marker { display: none; 
 
 .substep .sdetail {
   margin: 0;
-  padding: 0 10px 10px 33px;
+  padding: 0 10px 12px 24px;
   list-style: disc;
   font-size: 12.5px;
   color: var(--ink-2);
