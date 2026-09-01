@@ -490,7 +490,8 @@
     const addBtn = document.createElement("button");
     addBtn.type = "button";
     addBtn.className = "add-owner-btn";
-    addBtn.textContent = "+";
+    addBtn.innerHTML =
+      '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" /></svg>';
     addBtn.setAttribute("aria-label", "Add an owner");
     addBtn.addEventListener("click", () => startAddOwner(addBtn, ensureOwnersArray, onToggle));
     wrap.appendChild(addBtn);

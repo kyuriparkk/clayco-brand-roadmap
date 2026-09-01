@@ -813,14 +813,21 @@ dialog#drawer::backdrop {
   border: 1.5px dashed var(--line-strong);
   background: none;
   color: var(--ink-3);
-  font-size: 13px;
-  line-height: 1;
   cursor: pointer;
   flex: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
+}
+
+.add-owner-btn svg {
+  width: 9px;
+  height: 9px;
+  stroke: currentColor;
+  stroke-width: 1.5px;
+  stroke-linecap: round;
+  fill: none;
 }
 
 .add-owner-btn:hover { border-color: var(--red); border-style: solid; color: var(--red-dark); }
