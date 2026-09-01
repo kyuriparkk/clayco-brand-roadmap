@@ -673,6 +673,7 @@ dialog#drawer::backdrop {
   grid-template-columns: 260px 1fr;
   gap: 0;
   margin: -18px -24px;
+  min-height: calc(100% + 44px);
 }
 
 .substage-nav {
@@ -687,11 +688,11 @@ dialog#drawer::backdrop {
 .substage-nav-list {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 0;
 }
 
 .substage-nav-row:not(:last-child) {
-  box-shadow: 0 1px 0 0 var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
 }
 
 .substage-nav-row {
@@ -704,7 +705,7 @@ dialog#drawer::backdrop {
   border: none;
   border-radius: 0;
   margin: 0 -16px 0 -24px;
-  padding: 10px 16px 10px 24px;
+  padding: 16px 16px 16px 24px;
   font-family: inherit;
   cursor: pointer;
 }
@@ -743,9 +744,9 @@ dialog#drawer::backdrop {
   color: var(--ink);
 }
 
-.detail-col-single { margin-top: 28px; }
+.detail-col-single { margin-top: 40px; }
 
-.detail-field { margin-bottom: 32px; }
+.detail-field { margin-bottom: 40px; }
 .detail-field:last-child { margin-bottom: 0; }
 
 .detail-field h4 {
