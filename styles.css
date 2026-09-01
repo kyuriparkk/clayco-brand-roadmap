@@ -751,7 +751,7 @@ dialog#drawer::backdrop {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  color: var(--ink-3);
+  color: var(--ink);
   margin: 0 0 10px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--line);
