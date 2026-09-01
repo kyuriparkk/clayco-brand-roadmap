@@ -747,7 +747,7 @@ dialog#drawer::backdrop {
 .detail-field:last-child { margin-bottom: 0; }
 
 .detail-field h4 {
-  font-size: var(--fs-meta);
+  font-size: 15.5px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.07em;
