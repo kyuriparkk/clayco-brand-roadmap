@@ -69,8 +69,9 @@ button { font-family: inherit; }
 /* ---------- Header ---------- */
 
 header.site {
-  padding: 26px 0 20px;
+  padding: 14px 0 8px;
   border-bottom: 1px solid var(--line);
+  flex: none;
 }
 
 .header-top {
@@ -79,7 +80,7 @@ header.site {
   justify-content: space-between;
   gap: 24px;
   flex-wrap: wrap;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
 }
 
 .title-block {
@@ -118,7 +119,7 @@ header.site p.sub {
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   margin: 0;
-  padding: 14px 0;
+  padding: 8px 0;
 }
 
 .status-item {
@@ -185,14 +186,15 @@ header.site p.sub {
 /* ---------- Timeline section ---------- */
 
 section.timeline-section {
-  padding: 26px 0 44px;
+  padding: 12px 0 6px;
 }
 
 .section-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  flex: none;
 }
 
 .section-head h2 {
@@ -217,7 +219,8 @@ section.timeline-section {
   font-size: var(--fs-meta);
   font-weight: 600;
   color: var(--ink-2);
-  margin-bottom: 18px;
+  margin-bottom: 10px;
+  flex: none;
 }
 
 .legend .item {
@@ -252,6 +255,58 @@ section.timeline-section {
   position: relative;
 }
 
+/* Presentation mode: the whole page fills exactly one viewport, no vertical
+   scroll — the chart flexes to fill whatever room is left under the header.
+   Mobile keeps normal document scroll for its vertical stage list instead. */
+@media (min-width: 641px) {
+  html, body { height: 100%; overflow: hidden; }
+  body { display: flex; flex-direction: column; }
+  section.timeline-section {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  section.timeline-section > .wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .timeline-chart-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .timeline-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  #timeline-chart-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .timeline-chart {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .chart-stack {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .ruler { flex: none; }
+  footer.site { flex: none; }
+}
+
 .gridlines {
   position: absolute;
   inset: 0;
@@ -283,15 +338,24 @@ section.timeline-section {
   z-index: 2;
   display: grid;
   grid-template-columns: repeat(10, 1fr);
-  row-gap: 10px;
+  row-gap: 8px;
   column-gap: 0;
 }
 
+@media (min-width: 641px) {
+  .stage-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    /* 7 phases + governance, sharing whatever height is available. */
+    grid-template-rows: repeat(8, minmax(34px, 1fr));
+  }
+}
+
 .stage {
-  min-height: 70px;
+  min-height: 46px;
   border-radius: 8px;
   border: none;
-  padding: 10px 16px;
+  padding: 6px 16px;
   text-align: left;
   cursor: pointer;
   display: flex;
@@ -352,8 +416,8 @@ section.timeline-section {
   z-index: 2;
   display: grid;
   grid-template-columns: repeat(10, 1fr);
-  margin-top: 12px;
-  padding-top: 8px;
+  margin-top: 6px;
+  padding-top: 5px;
   border-top: 1px solid var(--line);
 }
 
@@ -446,7 +510,7 @@ section.timeline-section {
 /* ---------- Footer ---------- */
 
 footer.site {
-  padding: 16px 0 50px;
+  padding: 6px 0 10px;
   font-size: var(--fs-meta);
   color: var(--ink-3);
   display: flex;
@@ -458,34 +522,52 @@ footer.site {
 
 dialog#drawer {
   position: fixed;
-  inset: 0 0 0 auto;
+  top: 50%;
+  left: 50%;
   margin: 0;
-  height: 100vh;
-  width: min(460px, 100vw);
-  max-width: 100vw;
-  max-height: 100vh;
+  width: min(720px, 92vw);
+  max-width: 92vw;
+  height: auto;
+  max-height: 88vh;
   border: none;
+  border-radius: 14px;
   padding: 0;
-  box-shadow: -16px 0 48px rgba(15, 15, 15, 0.22);
-  transform: translateX(100%);
-  transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.3, 1);
+  box-shadow: 0 30px 70px rgba(15, 15, 15, 0.28);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.97);
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1), opacity 0.18s ease;
 }
 
-dialog#drawer.is-open { transform: translateX(0); }
+dialog#drawer.is-open { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
 dialog#drawer::backdrop {
-  background: rgba(21, 24, 27, 0.28);
+  background: rgba(21, 24, 27, 0.4);
 }
 
 @media (max-width: 640px) {
-  dialog#drawer { width: 100vw; }
+  dialog#drawer {
+    top: 0;
+    left: 0;
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    transform: translateY(100%);
+  }
+  dialog#drawer.is-open { transform: translateY(0); }
 }
 
 .drawer-inner {
   height: 100%;
+  max-height: 88vh;
   display: flex;
   flex-direction: column;
   background: var(--surface);
+}
+
+@media (max-width: 640px) {
+  .drawer-inner { max-height: 100vh; }
 }
 
 .drawer-header {
