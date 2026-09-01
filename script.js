@@ -150,22 +150,22 @@
     return ruler;
   }
 
-  function stageMetaLabel(phase) {
-    const status = phaseStatus(phase);
-    const pct = phasePercent(phase);
-    if (status === "done") return "Complete";
-    if (status === "blocked") return "Blocked";
-    if (status === "active") return `In progress · ${pct}%`;
-    return "Not started";
+  // Three visual tiers on the chart, matching the plain reference timeline:
+  // "live" (done or active — solid red), "todo" (light outline), "blocked" (amber).
+  function visualTier(status) {
+    if (status === "blocked") return "blocked";
+    if (status === "todo") return "todo";
+    return "live";
   }
 
-  function buildStageButton(phase, rowIndex, months, onOpen) {
+  function buildStageButton(phase, rowIndex, onOpen) {
     const status = phaseStatus(phase);
     const pct = phasePercent(phase);
+    const tier = visualTier(status);
 
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = `stage status-${status}`;
+    btn.className = `stage tier-${tier}`;
     btn.style.gridColumn = `${phase.month} / span ${phase.span}`;
     btn.style.gridRow = `${rowIndex}`;
     const startDate = monthOffsetDate(phase.month);
@@ -175,25 +175,10 @@
       `${phase.title}, ${STATUS_TEXT[status]}, ${pct}% complete, ${formatMonthYear(startDate)} to ${formatMonthYear(endDate)}. Open details.`
     );
 
-    const titleRow = document.createElement("span");
-    titleRow.className = "stage-title-row";
-    titleRow.innerHTML = `<span class="stage-title">${phase.title}</span>`;
-    btn.appendChild(titleRow);
-
-    const meta = document.createElement("span");
-    meta.className = "stage-meta";
-    meta.innerHTML =
-      `<span class="status-badge ${status}" aria-hidden="true">${STATUS_ICON[status]}</span>` +
-      `<span>${stageMetaLabel(phase)}</span>`;
-    btn.appendChild(meta);
-
-    const track = document.createElement("span");
-    track.className = "track";
-    const fill = document.createElement("span");
-    fill.className = "track-fill";
-    fill.style.width = status === "todo" ? "0%" : `${pct}%`;
-    track.appendChild(fill);
-    btn.appendChild(track);
+    btn.innerHTML =
+      `<span class="stage-title">${phase.title}</span>` +
+      (status === "done" ? `<span class="stage-check" aria-hidden="true">✓</span>` : "") +
+      (status === "blocked" ? `<span class="stage-check" aria-hidden="true">!</span>` : "");
 
     btn.addEventListener("click", () => onOpen(phase.id));
     return btn;
@@ -203,51 +188,42 @@
     const months = ROADMAP.months;
     const chart = document.createElement("div");
     chart.className = "timeline-chart";
-    chart.appendChild(buildGridlines(months));
 
-    const nowMarker = document.createElement("div");
-    nowMarker.className = "now-marker";
-    nowMarker.style.left = `${((ROADMAP.progressMonth - 1) / months) * 100}%`;
-    const nowDate = monthOffsetDate(ROADMAP.progressMonth);
-    nowMarker.innerHTML =
-      `<span class="now-tag">Current position — ${formatFull(nowDate)}</span><span class="now-line"></span>`;
-    chart.appendChild(nowMarker);
+    // Bars + governance band share one positioning context so gridlines and
+    // the current-position line are bounded to exactly that area — no more,
+    // no less — and never run into the ruler below.
+    const stack = document.createElement("div");
+    stack.className = "chart-stack";
+    stack.appendChild(buildGridlines(months));
+
+    const nowLine = document.createElement("div");
+    nowLine.className = "now-line";
+    nowLine.style.left = `${((ROADMAP.progressMonth - 1) / months) * 100}%`;
+    stack.appendChild(nowLine);
 
     const grid = document.createElement("div");
     grid.className = "stage-grid";
     ROADMAP.phases.forEach((phase, i) => {
-      grid.appendChild(buildStageButton(phase, i + 1, months, onOpen));
+      grid.appendChild(buildStageButton(phase, i + 1, onOpen));
     });
-
-    const govWrap = document.createElement("div");
-    govWrap.className = "governance-band";
-    govWrap.style.gridRow = `${ROADMAP.phases.length + 1}`;
-
-    const ticks = document.createElement("div");
-    ticks.className = "governance-ticks";
-    ticks.setAttribute("aria-hidden", "true");
-    ROADMAP.phases.forEach((phase) => {
-      const tick = document.createElement("div");
-      tick.className = "tick";
-      tick.style.left = `${((phase.month - 1) / months) * 100}%`;
-      ticks.appendChild(tick);
-    });
-    govWrap.appendChild(ticks);
 
     const govBtn = document.createElement("button");
     govBtn.type = "button";
-    govBtn.className = "governance";
+    govBtn.className = "stage governance-bar";
+    govBtn.style.gridColumn = "1 / -1";
+    govBtn.style.gridRow = `${ROADMAP.phases.length + 1}`;
     govBtn.setAttribute("aria-label", `${ROADMAP.ongoing.title} — continuous foundation beneath the roadmap. Open details.`);
-    govBtn.innerHTML =
-      `<span class="gov-title">${ROADMAP.ongoing.title} — continuous foundation</span>` +
-      `<span class="gov-note">${ROADMAP.ongoing.blurb}</span>`;
+    govBtn.innerHTML = `<span class="stage-title">${ROADMAP.ongoing.title}</span>`;
     govBtn.addEventListener("click", () => onOpen(ROADMAP.ongoing.id));
-    govWrap.appendChild(govBtn);
+    grid.appendChild(govBtn);
 
-    grid.appendChild(govWrap);
-    chart.appendChild(grid);
+    stack.appendChild(grid);
+    chart.appendChild(stack);
     chart.appendChild(buildRuler(months));
     root.appendChild(chart);
+
+    const nowDate = monthOffsetDate(ROADMAP.progressMonth);
+    document.getElementById("now-caption").textContent = `Current position — ${formatFull(nowDate)}`;
   }
 
   // ---------- mobile stage list ----------
@@ -260,13 +236,14 @@
     ROADMAP.phases.forEach((phase) => {
       const status = phaseStatus(phase);
       const pct = phasePercent(phase);
+      const tier = visualTier(status);
       const startDate = monthOffsetDate(phase.month);
       const endDate = addDays(monthOffsetDate(phase.month + phase.span), -1);
 
       const li = document.createElement("li");
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = `mobile-stage status-${status}`;
+      btn.className = `mobile-stage tier-${tier}`;
       btn.setAttribute(
         "aria-label",
         `${phase.title}, ${STATUS_TEXT[status]}, ${pct}% complete. Open details.`
@@ -278,11 +255,6 @@
           <span class="stage-title">${phase.title}</span>
           ${isCurrent ? '<span class="mobile-current-badge">Current</span>' : ""}
         </span>
-        <span class="stage-meta">
-          <span class="status-badge ${status}" aria-hidden="true">${STATUS_ICON[status]}</span>
-          <span>${stageMetaLabel(phase)}</span>
-        </span>
-        <span class="track mobile-track"><span class="track-fill" style="width:${status === "todo" ? 0 : pct}%"></span></span>
         <span class="mobile-dates">${formatMonthYear(startDate)} – ${formatMonthYear(endDate)}</span>
       `;
       btn.addEventListener("click", () => onOpen(phase.id));
@@ -294,12 +266,9 @@
     govLi.className = "governance-band-mobile";
     const govBtn = document.createElement("button");
     govBtn.type = "button";
-    govBtn.className = "mobile-stage";
+    govBtn.className = "mobile-stage tier-live";
     govBtn.setAttribute("aria-label", `${ROADMAP.ongoing.title} — continuous foundation. Open details.`);
-    govBtn.innerHTML = `
-      <span class="stage-title-row"><span class="stage-title">${ROADMAP.ongoing.title}</span></span>
-      <span class="stage-meta"><span>Continuous foundation beneath every stage</span></span>
-    `;
+    govBtn.innerHTML = `<span class="stage-title-row"><span class="stage-title">${ROADMAP.ongoing.title}</span></span>`;
     govBtn.addEventListener("click", () => onOpen(ROADMAP.ongoing.id));
     govLi.appendChild(govBtn);
     list.appendChild(govLi);
@@ -309,144 +278,97 @@
 
   // ---------- drawer ----------
 
-  function buildSubstep(step) {
-    const details = document.createElement("details");
-    details.className = "substep";
-    const summary = document.createElement("summary");
-    summary.innerHTML =
-      `<span class="status-badge ${step.status}" aria-hidden="true">${STATUS_ICON[step.status]}</span>` +
-      `<span class="stitle">${step.title}</span>` +
-      `<span class="stag status-${step.status}">${STATUS_TEXT[step.status]}</span>`;
-    details.appendChild(summary);
-    const ul = document.createElement("ul");
-    ul.className = "sdetail";
-    (step.detail || []).forEach((d) => {
-      const li = document.createElement("li");
-      li.textContent = d;
-      ul.appendChild(li);
-    });
-    details.appendChild(ul);
-    return details;
+  function badgeHTML(status) {
+    return (
+      `<span class="status-badge ${status}" aria-hidden="true">${STATUS_ICON[status]}</span>` +
+      `<span class="visually-hidden">${STATUS_TEXT[status]}</span>`
+    );
   }
 
-  function listOrEmpty(items, emptyText) {
-    const ul = document.createElement("ul");
-    if (!items || !items.length) {
-      ul.className = "plain-list empty";
-      const li = document.createElement("li");
-      li.textContent = emptyText;
-      ul.appendChild(li);
-      return ul;
+  function buildSubstep(step, currentStep) {
+    const hasDetail = step.detail && step.detail.length;
+    const row = document.createElement(hasDetail ? "details" : "div");
+    row.className = `substep${step === currentStep ? " is-current" : ""}`;
+    const head = document.createElement(hasDetail ? "summary" : "div");
+    head.className = "substep-head";
+    head.innerHTML = badgeHTML(step.status) + `<span class="stitle">${step.title}</span>`;
+    row.appendChild(head);
+    if (hasDetail) {
+      const ul = document.createElement("ul");
+      ul.className = "sdetail";
+      step.detail.forEach((d) => {
+        const li = document.createElement("li");
+        li.textContent = d;
+        ul.appendChild(li);
+      });
+      row.appendChild(ul);
     }
-    ul.className = "plain-list";
-    items.forEach((t) => {
-      const li = document.createElement("li");
-      li.textContent = t;
-      ul.appendChild(li);
-    });
-    return ul;
+    return row;
   }
 
   function renderDrawer(phase, isOngoing) {
-    const status = isOngoing ? phaseStatus(phase) : phaseStatus(phase);
-    const pct = phasePercent(phase);
+    const status = phaseStatus(phase);
     const counts = phaseCounts(phase);
-    const { current, next } = currentAndNextStep(phase);
+    const { current } = currentAndNextStep(phase);
 
     const header = document.getElementById("drawer-header-content");
     const startDate = isOngoing ? null : monthOffsetDate(phase.month);
     const endDate = isOngoing ? null : addDays(monthOffsetDate(phase.month + phase.span), -1);
+    const metaLine = [
+      phase.owner,
+      isOngoing ? "Ongoing" : `${formatMonthYear(startDate)} – ${formatMonthYear(endDate)}`,
+    ]
+      .filter(Boolean)
+      .join(" · ");
 
     header.innerHTML = `
       <h3 id="drawer-title">${phase.title}</h3>
-      <div class="drawer-badges">
+      <div class="drawer-subline">
         <span class="pill status-${status}">${STATUS_ICON[status]} ${STATUS_TEXT[status]}</span>
-        <span class="pill">${pct}% complete</span>
-      </div>
-      <div class="drawer-meta-grid">
-        <div><div class="m-label">Owner</div><div class="m-value">${phase.owner || "—"}</div></div>
-        <div><div class="m-label">${isOngoing ? "Cadence" : "Dates"}</div><div class="m-value">${
-          isOngoing ? "Ongoing" : `${formatMonthYear(startDate)} – ${formatMonthYear(endDate)}`
-        }</div></div>
+        <span class="drawer-meta-text">${metaLine}</span>
       </div>
     `;
 
     const body = document.getElementById("drawer-body-content");
     body.innerHTML = "";
 
-    const objective = document.createElement("div");
-    objective.className = "drawer-section";
-    objective.innerHTML = `<h4>Objective</h4><p>${phase.blurb}</p>`;
+    const objective = document.createElement("p");
+    objective.className = "drawer-objective";
+    objective.textContent = phase.blurb;
     body.appendChild(objective);
 
     const subSection = document.createElement("div");
     subSection.className = "drawer-section";
-    subSection.innerHTML = `<h4>Sub-stages</h4>`;
-
-    const summary = document.createElement("div");
-    summary.className = "progress-summary";
-    summary.innerHTML =
-      `<span class="count">${counts.done} of ${counts.total} sub-stages complete</span>` +
-      `<span class="track"><span class="track-fill" style="width:${pct}%"></span></span>`;
-    subSection.appendChild(summary);
-
-    const nextAction = document.createElement("div");
-    nextAction.className = "next-action";
-    if (current) {
-      nextAction.innerHTML = `<strong>Current:</strong> ${current.title}${
-        next ? ` &nbsp;·&nbsp; <strong>Next:</strong> ${next.title}` : ""
-      }`;
-    } else if (next) {
-      nextAction.innerHTML = `<strong>Next up:</strong> ${next.title}`;
-    } else {
-      nextAction.innerHTML = `<strong>All sub-stages complete.</strong>`;
-    }
-    subSection.appendChild(nextAction);
-
+    subSection.innerHTML = `<h4>Sub-stages <span class="h4-count">${counts.done}/${counts.total}</span></h4>`;
     const stepsList = document.createElement("div");
     stepsList.className = "substeps";
-    phase.steps.forEach((s) => stepsList.appendChild(buildSubstep(s)));
+    phase.steps.forEach((s) => stepsList.appendChild(buildSubstep(s, current)));
     subSection.appendChild(stepsList);
     body.appendChild(subSection);
 
-    const deliverables = document.createElement("div");
-    deliverables.className = "drawer-section";
-    deliverables.innerHTML = `<h4>Deliverables</h4>`;
-    deliverables.appendChild(listOrEmpty(phase.steps.map((s) => s.title), "None defined yet"));
-    body.appendChild(deliverables);
+    const rows = [];
+    if (phase.approvalGate) rows.push(["Approval gate", phase.approvalGate]);
+    const deps = dependsOnTitles(phase);
+    if (deps.length) rows.push(["Depends on", deps.join(", ")]);
+    if (phase.risks && phase.risks.length) rows.push(["Risk", phase.risks.join(" ")]);
 
-    const gate = document.createElement("div");
-    gate.className = "drawer-section";
-    gate.innerHTML = `<h4>Approval gate</h4><p>${phase.approvalGate || "Not yet defined"}</p>`;
-    body.appendChild(gate);
-
-    const deps = document.createElement("div");
-    deps.className = "drawer-section";
-    deps.innerHTML = `<h4>Dependencies</h4>`;
-    deps.appendChild(listOrEmpty(dependsOnTitles(phase), "No upstream dependencies"));
-    body.appendChild(deps);
-
-    const risks = document.createElement("div");
-    risks.className = "drawer-section";
-    risks.innerHTML = `<h4>Risks &amp; blockers</h4>`;
-    risks.appendChild(listOrEmpty(phase.risks, "No risks currently flagged"));
-    body.appendChild(risks);
-
-    const update = document.createElement("div");
-    update.className = "drawer-section";
-    update.innerHTML = `<h4>Latest update</h4>`;
-    if (phase.latestUpdate) {
-      const block = document.createElement("div");
-      block.className = "update-block";
-      block.innerHTML =
-        `<span class="u-date">${formatDateStr(phase.latestUpdate.date)}</span><p>${phase.latestUpdate.text}</p>`;
-      update.appendChild(block);
-    } else {
-      const p = document.createElement("p");
-      p.textContent = "No update logged yet.";
-      update.appendChild(p);
+    if (rows.length) {
+      const detailBlock = document.createElement("div");
+      detailBlock.className = "drawer-section";
+      detailBlock.innerHTML =
+        `<h4>Details</h4>` +
+        rows
+          .map(([k, v]) => `<div class="drow"><span class="drow-k">${k}</span><span class="drow-v">${v}</span></div>`)
+          .join("");
+      body.appendChild(detailBlock);
     }
-    body.appendChild(update);
+
+    if (phase.latestUpdate) {
+      const update = document.createElement("p");
+      update.className = "update-caption";
+      update.innerHTML = `<strong>${formatDateStr(phase.latestUpdate.date)}</strong> — ${phase.latestUpdate.text}`;
+      body.appendChild(update);
+    }
   }
 
   // ---------- init ----------
