@@ -13,7 +13,7 @@
       <h1>Clayco Brand Roadmap</h1>
       <p class="sub">
         A live look at where the enterprise brand project stands — from research
-        through launch. Click any stage on the timeline to jump to its detail below.
+        through launch. Click any stage on the timeline for detail.
       </p>
       <div class="legend">
         <span class="dot"><span class="swatch done"></span>Complete</span>
@@ -25,15 +25,15 @@
 
   <section class="overview">
     <div class="wrap">
-      <h2>10-Month Timeline</h2>
+      <div class="overview-head">
+        <h2>Timeline</h2>
+        <span class="months-badge"><strong id="months-count"></strong> months</span>
+      </div>
       <div class="gantt" id="gantt"></div>
+      <button class="ongoing-trigger" id="ongoing-trigger">
+        Brand Governance &amp; Measurement — ongoing <span class="arrow">→</span>
+      </button>
     </div>
-  </section>
-
-  <div class="wrap" id="phase-detail"></div>
-
-  <section class="ongoing">
-    <div class="wrap" id="ongoing-detail"></div>
   </section>
 
   <footer class="site">
@@ -42,7 +42,15 @@
     </div>
   </footer>
 
+  <div class="modal-overlay" id="modal-overlay" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true">
+      <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
   <script src="roadmap-data.js"></script>
   <script src="script.js"></script>
+  <script>document.getElementById("months-count").textContent = ROADMAP.months;</script>
 </body>
 </html>

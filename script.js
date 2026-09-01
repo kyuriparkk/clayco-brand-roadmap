@@ -8,10 +8,22 @@
     return "todo";
   }
 
+  function buildGridlines(months) {
+    const layer = document.createElement("div");
+    layer.className = "gridlines";
+    for (let i = 0; i <= months; i++) {
+      const line = document.createElement("div");
+      line.className = "gline";
+      line.style.left = `${(i / months) * 100}%`;
+      layer.appendChild(line);
+    }
+    return layer;
+  }
+
   function buildRuler(months) {
     const ruler = document.createElement("div");
-    ruler.className = "month-ruler";
-    ruler.appendChild(document.createElement("div")).className = "label";
+    ruler.className = "ruler";
+    ruler.style.gridTemplateColumns = `repeat(${months}, 1fr)`;
     for (let m = 1; m <= months; m++) {
       const num = document.createElement("div");
       num.className = "num";
@@ -21,55 +33,42 @@
     return ruler;
   }
 
-  function buildGantt(root) {
+  function buildGantt(root, onOpen) {
     const months = ROADMAP.months;
-    const inner = document.createElement("div");
-    inner.className = "gantt-inner";
-    inner.appendChild(buildRuler(months));
+    const chart = document.createElement("div");
+    chart.className = "chart";
+    chart.appendChild(buildGridlines(months));
 
     const rows = document.createElement("div");
-    rows.className = "gantt-rows";
+    rows.className = "rows";
 
     ROADMAP.phases.forEach((phase) => {
       const status = phaseStatus(phase);
       const row = document.createElement("div");
-      row.className = "gantt-row";
-
-      const label = document.createElement("div");
-      label.className = "rowlabel";
-      label.innerHTML = `<span class="status-chip ${status}"></span>${phase.title}`;
-      row.appendChild(label);
-
-      const track = document.createElement("div");
-      track.className = "track";
+      row.className = "row";
 
       const bar = document.createElement("button");
-      bar.className = `bar ${status}`;
-      bar.textContent = phase.title;
-      bar.title = phase.title;
+      const fadeClass = phase.fade ? `fade-${phase.fade}` : "";
+      bar.className = `bar ${status} ${fadeClass}`.trim();
       bar.style.left = `${((phase.month - 1) / months) * 100}%`;
       bar.style.width = `${(phase.span / months) * 100}%`;
-      bar.addEventListener("click", () => {
-        document.getElementById(phase.id).scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-      track.appendChild(bar);
-      row.appendChild(track);
+      bar.title = phase.title;
+      bar.innerHTML =
+        `<span>${phase.title}</span>` + (status === "done" ? `<span class="done-check">✓</span>` : "");
+      bar.addEventListener("click", () => onOpen(phase.id));
+      row.appendChild(bar);
       rows.appendChild(row);
     });
 
-    // "You are here" marker, positioned across the full row stack.
+    // Live-stage marker — a plain vertical bar, no label.
     const nowLine = document.createElement("div");
     nowLine.className = "now-line";
-    const pct = ((ROADMAP.progressMonth - 1) / months) * 100;
-    nowLine.style.left = `calc(220px + (100% - 220px) * ${pct / 100})`;
-    const flag = document.createElement("div");
-    flag.className = "flag";
-    flag.textContent = "You are here";
-    nowLine.appendChild(flag);
+    nowLine.style.left = `${((ROADMAP.progressMonth - 1) / months) * 100}%`;
     rows.appendChild(nowLine);
 
-    inner.appendChild(rows);
-    root.appendChild(inner);
+    chart.appendChild(rows);
+    chart.appendChild(buildRuler(months));
+    root.appendChild(chart);
   }
 
   function buildStep(step) {
@@ -92,74 +91,60 @@
     return li;
   }
 
-  function buildPhaseSection(phase, container, isOngoing) {
+  function renderPhaseInto(phase, container, isOngoing) {
+    container.innerHTML = "";
     const status = isOngoing ? "todo" : phaseStatus(phase);
-    const section = document.createElement("section");
-    section.className = "phase";
-    section.id = phase.id;
 
     const head = document.createElement("div");
     head.className = "phase-head";
     head.innerHTML = `<h3>${phase.title}</h3><span class="phase-badge ${status}">${status}</span>`;
-    section.appendChild(head);
+    container.appendChild(head);
 
     const blurb = document.createElement("p");
     blurb.className = "phase-blurb";
     blurb.textContent = phase.blurb;
-    section.appendChild(blurb);
+    container.appendChild(blurb);
 
     const ul = document.createElement("ul");
     ul.className = "steps";
     phase.steps.forEach((s) => ul.appendChild(buildStep(s)));
-    section.appendChild(ul);
-
-    container.appendChild(section);
-  }
-
-  function buildJumpNav() {
-    const nav = document.createElement("nav");
-    nav.className = "jumpnav";
-    ROADMAP.phases.forEach((phase) => {
-      const a = document.createElement("a");
-      a.href = `#${phase.id}`;
-      a.dataset.target = phase.id;
-      const tip = document.createElement("span");
-      tip.className = "tip";
-      tip.textContent = phase.title;
-      a.appendChild(tip);
-      nav.appendChild(a);
-    });
-    document.body.appendChild(nav);
-    return nav;
-  }
-
-  function wireScrollSpy(nav) {
-    const links = Array.from(nav.querySelectorAll("a"));
-    const sections = ROADMAP.phases.map((p) => document.getElementById(p.id));
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            links.forEach((l) => l.classList.toggle("current", l.dataset.target === entry.target.id));
-          }
-        });
-      },
-      { rootMargin: "-40% 0px -50% 0px" }
-    );
-    sections.forEach((s) => s && observer.observe(s));
+    container.appendChild(ul);
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    buildGantt(document.getElementById("gantt"));
+    const overlay = document.getElementById("modal-overlay");
+    const modalBody = document.getElementById("modal-body");
 
-    const detail = document.getElementById("phase-detail");
-    ROADMAP.phases.forEach((phase) => buildPhaseSection(phase, detail, false));
+    const byId = new Map(ROADMAP.phases.map((p) => [p.id, p]));
 
-    buildPhaseSection(ROADMAP.ongoing, document.getElementById("ongoing-detail"), true);
+    function openModal(id) {
+      const phase = id === ROADMAP.ongoing.id ? ROADMAP.ongoing : byId.get(id);
+      if (!phase) return;
+      renderPhaseInto(phase, modalBody, id === ROADMAP.ongoing.id);
+      overlay.hidden = false;
+      history.replaceState(null, "", `#${id}`);
+    }
 
-    const nav = buildJumpNav();
-    wireScrollSpy(nav);
+    function closeModal() {
+      overlay.hidden = true;
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+
+    document.getElementById("modal-close").addEventListener("click", closeModal);
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) closeModal();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !overlay.hidden) closeModal();
+    });
+
+    buildGantt(document.getElementById("gantt"), openModal);
+
+    document.getElementById("ongoing-trigger").addEventListener("click", () => openModal(ROADMAP.ongoing.id));
 
     document.getElementById("updated").textContent = ROADMAP.updated;
+
+    const initial = location.hash.replace("#", "");
+    if (initial && (byId.has(initial) || initial === ROADMAP.ongoing.id)) openModal(initial);
   });
 })();

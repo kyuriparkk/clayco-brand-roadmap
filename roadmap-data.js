@@ -25,6 +25,7 @@ const ROADMAP = {
       id: "research",
       month: 1,
       span: 3,
+      fade: "in",
       title: "Research & Discovery",
       blurb: "Interview synthesis, audience research, competitive review, and current-brand audit.",
       steps: [
@@ -109,6 +110,7 @@ const ROADMAP = {
       id: "design-system",
       month: 3,
       span: 4,
+      fade: "out",
       title: "Design System",
       blurb: "Creative direction, logo, type, color, imagery, and the graphic + digital systems. (+ John)",
       steps: [
@@ -169,6 +171,7 @@ const ROADMAP = {
       id: "website",
       month: 5,
       span: 2,
+      fade: "out",
       title: "Website",
       blurb: "Research, requirements, architecture, prototypes, content, and launch prep.",
       steps: [
@@ -220,6 +223,7 @@ const ROADMAP = {
       id: "launch",
       month: 9,
       span: 1,
+      fade: "out",
       title: "Launch",
       blurb: "Train, launch internally, launch externally, then iterate on feedback.",
       steps: [
