@@ -415,6 +415,10 @@ section.timeline-section {
     margin-bottom: 8px;
   }
 
+  /* .stage-title defaults to white for the solid-fill desktop bars — on
+     mobile's plain background it needs to be dark to stay legible. */
+  .mobile-stage .stage-title { color: var(--ink); }
+
   .mobile-current-badge {
     font-size: 10px;
     font-weight: 800;
