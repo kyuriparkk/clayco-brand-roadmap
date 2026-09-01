@@ -26,8 +26,7 @@ const ROADMAP = {
   // monthOffsetDate, which walks real calendar months from this date).
   projectStart: "2026-09-01",
   // Where the current-position marker sits on the 1–10 month axis.
-  // Currently: wrapping up Research, starting Brand Strategy.
-  progressMonth: 2.6,
+  progressMonth: 1,
   targetLaunch: "2027-06-01",
   updated: "2026-09-01",
   updatedBy: "Kyuri Park",
@@ -43,6 +42,7 @@ const ROADMAP = {
       month: 1,
       span: 2,
       fade: "in",
+      bleed: "left",
       title: "Research & Discovery",
       blurb: "Interview synthesis, audience research, competitive review, and current-brand audit.",
       owner: "Strategy & Insights Team",
@@ -279,6 +279,7 @@ const ROADMAP = {
       month: 10,
       span: 1,
       fade: "out",
+      bleed: "right",
       title: "Launch",
       blurb: "Train, launch internally, launch externally, then iterate on feedback.",
       owner: "Marketing & Communications",

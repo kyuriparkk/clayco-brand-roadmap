@@ -177,10 +177,11 @@
     const status = phaseStatus(phase);
     const pct = phasePercent(phase);
     const fadeClass = phase.fade ? `fade-${phase.fade}` : "";
+    const bleedClass = phase.bleed ? `bleed-${phase.bleed}` : "";
 
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = `stage ${fadeClass}`.trim();
+    btn.className = `stage ${fadeClass} ${bleedClass}`.trim();
     btn.style.gridColumn = `${phase.month} / span ${phase.span}`;
     btn.style.gridRow = `${rowIndex}`;
     const startDate = monthOffsetDate(phase.month);

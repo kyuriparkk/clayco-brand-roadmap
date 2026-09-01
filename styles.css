@@ -49,7 +49,7 @@ button { font-family: inherit; }
 .wrap {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 44px;
 }
 
 :focus-visible {
@@ -149,9 +149,7 @@ header.site p.sub {
   display: flex;
   align-items: baseline;
   gap: 6px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex-wrap: wrap;
 }
 
 .status-value .big {
@@ -355,12 +353,21 @@ section.timeline-section {
   color: #fff;
 }
 
-/* Gradient bleeds matching the reference timeline exactly. */
-.stage.fade-in { background: linear-gradient(90deg, rgba(233, 55, 43, 0) 0, var(--red) 55%); }
+/* Gradient bleeds matching the reference timeline exactly. Fixed pixel
+   stops (not %) so a wider bled box can't push the fade under the title. */
+.stage.fade-in {
+  background: linear-gradient(90deg, rgba(233, 55, 43, 0) 0, var(--red) 72px);
+  padding-left: 86px;
+}
 .stage.fade-out { background: linear-gradient(90deg, var(--red) 0, var(--red) 45%, rgba(233, 55, 43, 0) 100%); }
 
 .stage.fade-in .stage-title,
 .stage.fade-out .stage-title { color: #fff; }
+
+/* Research/Launch genuinely run outside the 10-month frame — let their
+   fade extend past the grid edge instead of stopping at it. */
+.stage.bleed-left { margin-left: -36px; }
+.stage.bleed-right { margin-right: -36px; }
 
 /* Ruler */
 
