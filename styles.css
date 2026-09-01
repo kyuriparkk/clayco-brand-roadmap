@@ -719,11 +719,3 @@ details.substep > summary.substep-head::-webkit-details-marker { display: none; 
 }
 
 .update-caption strong { color: var(--ink-2); }
-
-.governance-inline {
-  margin-top: 22px;
-  padding-top: 18px;
-  border-top: 1px dashed var(--line-strong);
-}
-
-.governance-inline .drow { margin-top: 8px; }

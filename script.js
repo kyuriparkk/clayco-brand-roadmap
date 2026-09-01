@@ -67,13 +67,6 @@
     return Math.round((sum / total) * 100);
   }
 
-  function phaseCounts(phase) {
-    return {
-      done: phase.steps.filter((s) => s.status === "done").length,
-      total: phase.steps.length,
-    };
-  }
-
   function currentAndNextStep(phase) {
     const current = phase.steps.find((s) => s.status === "active" || s.status === "blocked");
     if (current) {
@@ -303,8 +296,23 @@
 
   function renderDrawer(phase, isOngoing) {
     const status = phaseStatus(phase);
-    const counts = phaseCounts(phase);
     const { current } = currentAndNextStep(phase);
+
+    // Governance & Measurement isn't its own stage on the timeline — it's
+    // the continuous foundation that starts once Launch ships, so it's
+    // folded in as one more sub-stage of Launch rather than its own section.
+    let displaySteps = phase.steps;
+    if (phase.id === "launch") {
+      const gov = ROADMAP.ongoing;
+      const govStatus = gov.steps[0] ? gov.steps[0].status : "todo";
+      const govDetail = [gov.blurb];
+      if (gov.approvalGate) govDetail.push(`Approval gate: ${gov.approvalGate}`);
+      displaySteps = [...phase.steps, { title: gov.title, status: govStatus, detail: govDetail }];
+    }
+    const counts = {
+      done: displaySteps.filter((s) => s.status === "done").length,
+      total: displaySteps.length,
+    };
 
     const header = document.getElementById("drawer-header-content");
     const startDate = isOngoing ? null : monthOffsetDate(phase.month);
@@ -337,7 +345,7 @@
     subSection.innerHTML = `<h4>Sub-stages <span class="h4-count">${counts.done}/${counts.total}</span></h4>`;
     const stepsList = document.createElement("div");
     stepsList.className = "substeps";
-    phase.steps.forEach((s) => stepsList.appendChild(buildSubstep(s, current)));
+    displaySteps.forEach((s) => stepsList.appendChild(buildSubstep(s, current)));
     subSection.appendChild(stepsList);
     body.appendChild(subSection);
 
@@ -363,27 +371,6 @@
       update.className = "update-caption";
       update.innerHTML = `<strong>${formatDateStr(phase.latestUpdate.date)}</strong> — ${phase.latestUpdate.text}`;
       body.appendChild(update);
-    }
-
-    // Governance & Measurement isn't its own stage on the timeline — it's
-    // the continuous foundation that starts once Launch ships, so it lives
-    // inside the Launch detail instead.
-    if (phase.id === "launch") {
-      const gov = ROADMAP.ongoing;
-      const govSection = document.createElement("div");
-      govSection.className = "drawer-section governance-inline";
-      govSection.innerHTML = `<h4>${gov.title} <span class="h4-count">Ongoing</span></h4><p>${gov.blurb}</p>`;
-      const govSteps = document.createElement("div");
-      govSteps.className = "substeps";
-      gov.steps.forEach((s) => govSteps.appendChild(buildSubstep(s, null)));
-      govSection.appendChild(govSteps);
-      if (gov.approvalGate) {
-        const gateRow = document.createElement("div");
-        gateRow.className = "drow";
-        gateRow.innerHTML = `<span class="drow-k">Approval gate</span><span class="drow-v">${gov.approvalGate}</span>`;
-        govSection.appendChild(gateRow);
-      }
-      body.appendChild(govSection);
     }
   }
 
