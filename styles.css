@@ -193,7 +193,7 @@ section.timeline-section {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 14px;
   flex: none;
 }
 
@@ -211,35 +211,6 @@ section.timeline-section {
   font-weight: 700;
   color: var(--red-dark);
 }
-
-.legend {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  font-size: var(--fs-meta);
-  font-weight: 600;
-  color: var(--ink-2);
-  margin-bottom: 10px;
-  flex: none;
-}
-
-.legend .item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.legend .swatch {
-  width: 14px;
-  height: 10px;
-  border-radius: 2px;
-  display: inline-block;
-  flex: none;
-}
-
-.swatch.live { background: var(--red); }
-.swatch.todo { background: var(--red-soft); border: 1.5px solid var(--red-outline); }
-.swatch.blocked { background-image: repeating-linear-gradient(45deg, var(--amber-soft) 0 4px, transparent 4px 8px); border: 1.5px solid var(--amber); }
 
 /* Desktop/tablet chart */
 
@@ -353,7 +324,7 @@ section.timeline-section {
 
 .stage {
   min-height: 46px;
-  border-radius: 8px;
+  border-radius: 0;
   border: none;
   padding: 6px 16px;
   text-align: left;
@@ -362,6 +333,7 @@ section.timeline-section {
   align-items: center;
   gap: 10px;
   font-family: inherit;
+  background: var(--red);
   transition: filter 0.12s ease;
 }
 
@@ -372,6 +344,7 @@ section.timeline-section {
   font-size: 16px;
   font-weight: 700;
   line-height: 1.2;
+  color: #fff;
 }
 
 .stage-check {
@@ -382,32 +355,20 @@ section.timeline-section {
   color: #fff;
 }
 
-.stage.tier-live { background: var(--red); }
-.stage.tier-live .stage-title { color: #fff; }
+/* Gradient bleeds matching the reference timeline exactly. */
+.stage.fade-in { background: linear-gradient(90deg, rgba(233, 55, 43, 0) 0, var(--red) 55%); }
+.stage.fade-out { background: linear-gradient(90deg, var(--red) 0, var(--red) 45%, rgba(233, 55, 43, 0) 100%); }
 
-.stage.tier-todo {
-  background: var(--red-soft);
-  border: 1.5px solid var(--red-outline);
-}
-.stage.tier-todo .stage-title { color: var(--ink); }
+.stage.fade-in .stage-title,
+.stage.fade-out .stage-title { color: #fff; }
 
-.stage.tier-blocked {
-  background-color: var(--surface);
-  background-image: repeating-linear-gradient(45deg, var(--amber-soft) 0 6px, transparent 6px 12px);
-  border: 1.5px solid var(--amber);
-}
-.stage.tier-blocked .stage-title { color: var(--ink); }
-.stage.tier-blocked .stage-check { color: var(--amber); }
-
-/* Governance — same bar language as every stage, distinguished only by a
-   subtle diagonal texture, so it reads as the foundation beneath them. */
+/* Governance — same shape/typography as every stage, in flat gray so it
+   reads as the (non-red, not date-boxed) foundation beneath them. */
 .governance-bar {
-  background-color: var(--red-soft);
-  background-image: repeating-linear-gradient(135deg, rgba(233, 55, 43, 0.16) 0 10px, transparent 10px 20px);
-  border: 1.5px solid var(--red-outline);
+  background: var(--ink-3);
   margin-top: 4px;
 }
-.governance-bar .stage-title { color: var(--red-dark); }
+.governance-bar .stage-title { color: #fff; }
 
 /* Ruler */
 

@@ -115,9 +115,7 @@
     document.getElementById("stat-health").innerHTML =
       `<span class="health-dot ${health.status}"></span>${healthLabels[health.status] || health.status}`;
 
-    const launchPhase = phaseById("launch");
-    const launchDate = monthOffsetDate(launchPhase.month + launchPhase.span);
-    document.getElementById("stat-launch").textContent = formatMonthYear(launchDate);
+    document.getElementById("stat-launch").textContent = formatFull(parseISO(ROADMAP.targetLaunch));
 
     document.getElementById("stat-updated").textContent = formatDateStr(ROADMAP.updated);
   }
@@ -161,11 +159,11 @@
   function buildStageButton(phase, rowIndex, onOpen) {
     const status = phaseStatus(phase);
     const pct = phasePercent(phase);
-    const tier = visualTier(status);
+    const fadeClass = phase.fade ? `fade-${phase.fade}` : "";
 
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = `stage tier-${tier}`;
+    btn.className = `stage ${fadeClass}`.trim();
     btn.style.gridColumn = `${phase.month} / span ${phase.span}`;
     btn.style.gridRow = `${rowIndex}`;
     const startDate = monthOffsetDate(phase.month);
