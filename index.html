@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Clayco Brand Roadmap</title>
+  <meta name="description" content="Live tracker for the Clayco enterprise brand project — research, strategy, design system, website, guidelines, implementation, and launch." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site">
+    <div class="wrap">
+      <h1>Clayco Brand Roadmap</h1>
+      <p class="sub">
+        A live look at where the enterprise brand project stands — from research
+        through launch. Click any stage on the timeline to jump to its detail below.
+      </p>
+      <div class="legend">
+        <span class="dot"><span class="swatch done"></span>Complete</span>
+        <span class="dot"><span class="swatch active"></span>In progress</span>
+        <span class="dot"><span class="swatch todo"></span>Not started</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="overview">
+    <div class="wrap">
+      <h2>10-Month Timeline</h2>
+      <div class="gantt" id="gantt"></div>
+    </div>
+  </section>
+
+  <div class="wrap" id="phase-detail"></div>
+
+  <section class="ongoing">
+    <div class="wrap" id="ongoing-detail"></div>
+  </section>
+
+  <footer class="site">
+    <div class="wrap">
+      Last updated <span id="updated"></span> · edit <code>roadmap-data.js</code> and push to update this page.
+    </div>
+  </footer>
+
+  <script src="roadmap-data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
