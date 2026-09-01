@@ -123,6 +123,14 @@
     return ROADMAP.phases.find((p) => p.id === id);
   }
 
+  function dependsOnTitles(phase) {
+    if (!phase.dependsOn || !phase.dependsOn.length) return [];
+    return phase.dependsOn.map((id) => {
+      const p = phaseById(id);
+      return p ? p.title : id;
+    });
+  }
+
   // ---------- status strip ----------
 
   function renderStatusStrip() {
@@ -131,7 +139,7 @@
       .join(", ");
 
     const pct = overallPercent();
-    document.getElementById("stat-progress").innerHTML = `<span class="big">${pct}%</span> complete`;
+    document.getElementById("stat-progress").innerHTML = `<span class="big">${pct}%</span>`;
 
     document.getElementById("stat-launch").textContent = formatFull(parseISO(ROADMAP.targetLaunch));
   }
@@ -456,68 +464,56 @@
 
   // ---------- drawer ----------
 
-  function buildSubstep(step, currentStep, onToggle, reorderCtx, ownerFallback) {
-    // Always expandable — even sub-stages with no detail bullets still need
-    // somewhere to show/add their owners.
-    const row = document.createElement("details");
-    row.className = `substep${step === currentStep ? " is-current" : ""}`;
-    const head = document.createElement("summary");
-    head.className = "substep-head";
+  function buildOwnerField(ownersToShow, ensureOwnersArray, onToggle) {
+    const wrap = document.createElement("span");
+    wrap.className = "drow-v";
+    ownersToShow.forEach((name) => {
+      const pair = document.createElement("span");
+      pair.className = "owner-pair";
+      pair.innerHTML = `<span class="owner-avatar" aria-hidden="true">${initials(name)}</span>${name}`;
 
-    // Three clickable stages — not started, in progress, complete — cycled
-    // in that order with each click, rather than a plain done/not-done box.
-    const NEXT_STATUS = { todo: "active", active: "done", done: "todo", blocked: "todo" };
-    const check = document.createElement("button");
-    check.type = "button";
-    check.className = `step-check ${step.status}`;
-    const setCheckLabel = () => {
-      check.setAttribute("aria-label", `"${step.title}" — ${STATUS_TEXT[step.status]}. Click to advance.`);
-    };
-    setCheckLabel();
-    // Clicking inside a <summary> would otherwise also toggle the
-    // disclosure open/closed — keep the two interactions independent.
-    check.addEventListener("click", (e) => {
-      e.stopPropagation();
-      step.status = NEXT_STATUS[step.status] || "todo";
-      check.className = `step-check ${step.status}`;
-      setCheckLabel();
-      if (onToggle) onToggle();
-    });
-    head.appendChild(check);
-
-    const title = document.createElement("span");
-    title.className = "stitle";
-    title.textContent = step.title;
-    head.appendChild(title);
-
-    // Per-sub-stage assignees — falls back to the phase's owners until
-    // individual assignments are decided. Just the avatars show in the
-    // collapsed row (stacked); names only appear once expanded.
-    const owners = step.owners || ownerFallback || [];
-    if (owners.length) {
-      const stack = document.createElement("span");
-      stack.className = "substep-owner-stack";
-      owners.forEach((name) => {
-        const avatar = document.createElement("span");
-        avatar.className = "owner-avatar substep-owner-avatar";
-        avatar.textContent = initials(name);
-        avatar.setAttribute("aria-label", `Assigned to ${name}`);
-        stack.appendChild(avatar);
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "remove-owner-btn";
+      removeBtn.textContent = "×";
+      removeBtn.setAttribute("aria-label", `Remove ${name}`);
+      removeBtn.addEventListener("click", () => {
+        const arr = ensureOwnersArray();
+        const idx = arr.indexOf(name);
+        if (idx !== -1) arr.splice(idx, 1);
+        if (onToggle) onToggle();
       });
-      head.appendChild(stack);
-    }
+      pair.appendChild(removeBtn);
 
+      wrap.appendChild(pair);
+    });
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "add-owner-btn";
+    addBtn.textContent = "+";
+    addBtn.setAttribute("aria-label", "Add an owner");
+    addBtn.addEventListener("click", () => startAddOwner(addBtn, ensureOwnersArray, onToggle));
+    wrap.appendChild(addBtn);
+    return wrap;
+  }
+
+  // One row in the left-hand sub-stage list — selecting it (click anywhere
+  // on the row) is the only way to change what the right panel shows, so
+  // exactly one sub-stage is ever "active" at a time. The status circle is
+  // also independently clickable to cycle not-started → in-progress →
+  // complete without changing the selection logic.
+  function buildNavRow(step, isSelected, onSelect, onToggle, reorderCtx) {
+    const NEXT_STATUS = { todo: "active", active: "done", done: "todo", blocked: "todo" };
+    const row = document.createElement("button");
+    row.type = "button";
+    row.className = `substage-nav-row${isSelected ? " is-selected" : ""}`;
+    row.addEventListener("click", onSelect);
+
+    // Press-and-hold-to-drag reordering via the native HTML5 DnD API — a
+    // plain click still selects the row as normal.
     if (reorderCtx) {
       const { array, index } = reorderCtx;
-      const handle = document.createElement("span");
-      handle.className = "drag-handle";
-      handle.textContent = "⠿";
-      handle.setAttribute("aria-hidden", "true");
-      head.appendChild(handle);
-
-      // Press-and-hold-to-drag reordering via the native HTML5 DnD API.
       row.draggable = true;
-      row.dataset.index = String(index);
       row.addEventListener("dragstart", (e) => {
         row.classList.add("dragging");
         e.dataTransfer.effectAllowed = "move";
@@ -540,40 +536,69 @@
       });
     }
 
-    row.appendChild(head);
-
-    const body = document.createElement("div");
-    body.className = "sdetail-body";
-
-    const ownerRow = document.createElement("div");
-    ownerRow.className = "substep-owner-row";
-    owners.forEach((name) => {
-      const ownerLine = document.createElement("span");
-      ownerLine.className = "substep-owner-full";
-      ownerLine.innerHTML = `<span class="owner-avatar" aria-hidden="true">${initials(name)}</span>${name}`;
-      ownerRow.appendChild(ownerLine);
-    });
-    const addBtn = document.createElement("button");
-    addBtn.type = "button";
-    addBtn.className = "add-owner-btn";
-    addBtn.textContent = "+";
-    addBtn.setAttribute("aria-label", `Add an owner to "${step.title}"`);
-    addBtn.addEventListener("click", (e) => {
-      e.preventDefault();
+    const check = document.createElement("span");
+    check.className = `step-check ${step.status}`;
+    check.setAttribute("role", "button");
+    check.tabIndex = 0;
+    check.setAttribute("aria-label", `"${step.title}" — ${STATUS_TEXT[step.status]}. Click to advance.`);
+    const cycle = (e) => {
       e.stopPropagation();
-      startAddOwner(
-        addBtn,
-        () => {
-          if (!step.owners) step.owners = [...owners];
-          return step.owners;
-        },
-        onToggle
-      );
+      step.status = NEXT_STATUS[step.status] || "todo";
+      if (onToggle) onToggle();
+    };
+    check.addEventListener("click", cycle);
+    check.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        cycle(e);
+      }
     });
-    ownerRow.appendChild(addBtn);
-    body.appendChild(ownerRow);
+    row.appendChild(check);
+
+    const text = document.createElement("span");
+    text.className = "substage-nav-text";
+    const title = document.createElement("span");
+    title.className = "substage-nav-title";
+    title.textContent = step.title;
+    text.appendChild(title);
+    row.appendChild(text);
+
+    return row;
+  }
+
+  // The right-hand panel for whichever sub-stage is selected.
+  function buildDetailPanel(container, { step, phase, isCurrent, ownerFallback, onToggle }) {
+    container.innerHTML = "";
+
+    const eyebrow = document.createElement("div");
+    eyebrow.className = "detail-eyebrow";
+    eyebrow.textContent = "Selected sub-stage";
+    container.appendChild(eyebrow);
+
+    const h3 = document.createElement("h3");
+    h3.className = "detail-title";
+    h3.textContent = step.title;
+    container.appendChild(h3);
+
+    const subline = document.createElement("div");
+    subline.className = "drawer-subline";
+    subline.innerHTML = `<span class="pill status-${step.status}">${STATUS_TEXT[step.status]}</span>`;
+    container.appendChild(subline);
+
+    const grid = document.createElement("div");
+    grid.className = "detail-grid";
+
+    const leftCol = document.createElement("div");
+    leftCol.className = "detail-col";
+    const objective = document.createElement("div");
+    objective.className = "detail-field";
+    objective.innerHTML = `<h4>Objective</h4><p>${phase.blurb}</p>`;
+    leftCol.appendChild(objective);
 
     if (step.detail && step.detail.length) {
+      const deliverables = document.createElement("div");
+      deliverables.className = "detail-field";
+      deliverables.innerHTML = "<h4>Deliverables</h4>";
       const ul = document.createElement("ul");
       ul.className = "sdetail";
       step.detail.forEach((d) => {
@@ -581,15 +606,36 @@
         li.textContent = d;
         ul.appendChild(li);
       });
-      body.appendChild(ul);
+      deliverables.appendChild(ul);
+      leftCol.appendChild(deliverables);
     }
-    row.appendChild(body);
-    return row;
+
+    const rightCol = document.createElement("div");
+    rightCol.className = "detail-col";
+
+    const ownersToShow = step.owners || ownerFallback || [];
+    const ownerField = document.createElement("div");
+    ownerField.className = "detail-field";
+    ownerField.innerHTML = "<h4>Owner</h4>";
+    ownerField.appendChild(
+      buildOwnerField(
+        ownersToShow,
+        () => {
+          if (!step.owners) step.owners = [...ownersToShow];
+          return step.owners;
+        },
+        onToggle
+      )
+    );
+    rightCol.appendChild(ownerField);
+
+    grid.appendChild(leftCol);
+    grid.appendChild(rightCol);
+    container.appendChild(grid);
   }
 
   function renderDrawer(phase, isOngoing, onToggle) {
     const status = phaseStatus(phase);
-    const { current } = currentAndNextStep(phase);
 
     // Governance & Measurement isn't its own stage on the timeline — it's
     // the continuous foundation that starts once Launch ships, so it's
@@ -618,58 +664,59 @@
     const body = document.getElementById("drawer-body-content");
     body.innerHTML = "";
 
-    const subSection = document.createElement("div");
-    subSection.className = "drawer-section";
-    subSection.innerHTML = `<h4>Sub-stages <span class="h4-count">${counts.done}/${counts.total}</span></h4>`;
-    const stepsList = document.createElement("div");
-    stepsList.className = "substeps";
+    // Which sub-stage is selected persists on the phase object itself so it
+    // survives the full re-render triggered by status/owner changes,
+    // defaulting to whichever sub-stage is actually in progress right now.
+    const currentStep = displaySteps.find((s) => s.status === "active" || s.status === "blocked") || null;
+    if (phase.__selected == null || phase.__selected >= displaySteps.length) {
+      phase.__selected = currentStep ? displaySteps.indexOf(currentStep) : 0;
+    }
+    const selectedStep = displaySteps[phase.__selected];
+
+    const columns = document.createElement("div");
+    columns.className = "drawer-columns";
+
+    const nav = document.createElement("div");
+    nav.className = "substage-nav";
+    nav.innerHTML = `<h4>Sub-stages <span class="h4-count">${counts.done}/${counts.total}</span></h4>`;
+    const navList = document.createElement("div");
+    navList.className = "substage-nav-list";
     displaySteps.forEach((s, i) => {
-      // Reordering always operates on the real source array — for Launch,
-      // items past its own steps belong to Governance's own (single-item)
-      // list rather than Launch's.
-      const fromGovernance = phase.id === "launch" && i >= phase.steps.length;
-      const reorderCtx = fromGovernance
+      const fromGov = phase.id === "launch" && i >= phase.steps.length;
+      const reorderCtx = fromGov
         ? { array: ROADMAP.ongoing.steps, index: i - phase.steps.length }
         : { array: phase.steps, index: i };
-      const ownerFallback = fromGovernance ? ROADMAP.ongoing.owners : phase.owners;
-      stepsList.appendChild(buildSubstep(s, current, onToggle, reorderCtx, ownerFallback));
+      navList.appendChild(
+        buildNavRow(
+          s,
+          s === selectedStep,
+          () => {
+            phase.__selected = i;
+            if (onToggle) onToggle();
+          },
+          onToggle,
+          reorderCtx
+        )
+      );
     });
-    subSection.appendChild(stepsList);
-    body.appendChild(subSection);
+    nav.appendChild(navList);
 
-    if (!phase.owners) phase.owners = [];
+    const detail = document.createElement("div");
+    detail.className = "substage-detail";
 
-    const detailBlock = document.createElement("div");
-    detailBlock.className = "drawer-section";
-    detailBlock.innerHTML = "<h4>Details</h4>";
-
-    const ownerRow = document.createElement("div");
-    ownerRow.className = "drow";
-    const ownerKey = document.createElement("span");
-    ownerKey.className = "drow-k";
-    ownerKey.textContent = "Owner";
-    ownerRow.appendChild(ownerKey);
-
-    const ownerValue = document.createElement("span");
-    ownerValue.className = "drow-v";
-    phase.owners.forEach((name) => {
-      const pair = document.createElement("span");
-      pair.className = "owner-pair";
-      pair.innerHTML = `<span class="owner-avatar" aria-hidden="true">${initials(name)}</span>${name}`;
-      ownerValue.appendChild(pair);
+    const selIdx = displaySteps.indexOf(selectedStep);
+    const fromGovernance = phase.id === "launch" && selIdx >= phase.steps.length;
+    buildDetailPanel(detail, {
+      step: selectedStep,
+      phase,
+      isCurrent: selectedStep === currentStep,
+      ownerFallback: fromGovernance ? ROADMAP.ongoing.owners : phase.owners,
+      onToggle,
     });
 
-    const addBtn = document.createElement("button");
-    addBtn.type = "button";
-    addBtn.className = "add-owner-btn";
-    addBtn.textContent = "+";
-    addBtn.setAttribute("aria-label", "Add an owner to this stage");
-    addBtn.addEventListener("click", () => startAddOwner(addBtn, () => phase.owners, onToggle));
-    ownerValue.appendChild(addBtn);
-
-    ownerRow.appendChild(ownerValue);
-    detailBlock.appendChild(ownerRow);
-    body.appendChild(detailBlock);
+    columns.appendChild(nav);
+    columns.appendChild(detail);
+    body.appendChild(columns);
   }
 
   // ---------- init ----------
@@ -743,7 +790,6 @@
 
     document.getElementById("footer-updated").textContent = formatDateStr(ROADMAP.updated);
     document.getElementById("footer-updated-by").textContent = ROADMAP.updatedBy;
-    document.getElementById("footer-next-update").textContent = formatDateStr(ROADMAP.nextUpdate);
 
     const initial = location.hash.replace("#", "");
     if (initial && phaseById(initial)) openDrawer(initial);
