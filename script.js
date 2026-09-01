@@ -266,20 +266,32 @@
 
   // ---------- drawer ----------
 
-  function badgeHTML(status) {
-    return (
-      `<span class="status-badge ${status}" aria-hidden="true">${STATUS_ICON[status]}</span>` +
-      `<span class="visually-hidden">${STATUS_TEXT[status]}</span>`
-    );
-  }
-
-  function buildSubstep(step, currentStep) {
+  function buildSubstep(step, currentStep, onToggle) {
     const hasDetail = step.detail && step.detail.length;
     const row = document.createElement(hasDetail ? "details" : "div");
     row.className = `substep${step === currentStep ? " is-current" : ""}`;
     const head = document.createElement(hasDetail ? "summary" : "div");
     head.className = "substep-head";
-    head.innerHTML = badgeHTML(step.status) + `<span class="stitle">${step.title}</span>`;
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "step-checkbox";
+    checkbox.checked = step.status === "done";
+    checkbox.setAttribute("aria-label", `Mark "${step.title}" complete`);
+    // Clicking the checkbox inside a <summary> would otherwise also toggle
+    // the disclosure open/closed — keep the two interactions independent.
+    checkbox.addEventListener("click", (e) => e.stopPropagation());
+    checkbox.addEventListener("change", () => {
+      step.status = checkbox.checked ? "done" : "todo";
+      if (onToggle) onToggle();
+    });
+    head.appendChild(checkbox);
+
+    const title = document.createElement("span");
+    title.className = "stitle";
+    title.textContent = step.title;
+    head.appendChild(title);
+
     row.appendChild(head);
     if (hasDetail) {
       const ul = document.createElement("ul");
@@ -294,21 +306,16 @@
     return row;
   }
 
-  function renderDrawer(phase, isOngoing) {
+  function renderDrawer(phase, isOngoing, onToggle) {
     const status = phaseStatus(phase);
     const { current } = currentAndNextStep(phase);
 
     // Governance & Measurement isn't its own stage on the timeline — it's
     // the continuous foundation that starts once Launch ships, so it's
     // folded in as one more sub-stage of Launch rather than its own section.
-    let displaySteps = phase.steps;
-    if (phase.id === "launch") {
-      const gov = ROADMAP.ongoing;
-      const govStatus = gov.steps[0] ? gov.steps[0].status : "todo";
-      const govDetail = [gov.blurb];
-      if (gov.approvalGate) govDetail.push(`Approval gate: ${gov.approvalGate}`);
-      displaySteps = [...phase.steps, { title: gov.title, status: govStatus, detail: govDetail }];
-    }
+    // Reference the real step objects (not copies) so checking them off here
+    // persists correctly.
+    const displaySteps = phase.id === "launch" ? [...phase.steps, ...ROADMAP.ongoing.steps] : phase.steps;
     const counts = {
       done: displaySteps.filter((s) => s.status === "done").length,
       total: displaySteps.length,
@@ -327,7 +334,7 @@
     header.innerHTML = `
       <h3 id="drawer-title">${phase.title}</h3>
       <div class="drawer-subline">
-        <span class="pill status-${status}">${STATUS_ICON[status]} ${STATUS_TEXT[status]}</span>
+        <span class="pill status-${status}">${STATUS_TEXT[status]}</span>
         <span class="drawer-meta-text">${metaLine}</span>
       </div>
     `;
@@ -340,7 +347,7 @@
     subSection.innerHTML = `<h4>Sub-stages <span class="h4-count">${counts.done}/${counts.total}</span></h4>`;
     const stepsList = document.createElement("div");
     stepsList.className = "substeps";
-    displaySteps.forEach((s) => stepsList.appendChild(buildSubstep(s, current)));
+    displaySteps.forEach((s) => stepsList.appendChild(buildSubstep(s, current, onToggle)));
     subSection.appendChild(stepsList);
     body.appendChild(subSection);
 
@@ -372,7 +379,16 @@
   // ---------- init ----------
 
   document.addEventListener("DOMContentLoaded", () => {
-    renderStatusStrip();
+    const chartWrap = document.getElementById("timeline-chart-wrap");
+    const mobileWrap = document.getElementById("mobile-list-wrap");
+
+    function rebuildChart() {
+      renderStatusStrip();
+      chartWrap.innerHTML = "";
+      mobileWrap.innerHTML = "";
+      buildDesktopChart(chartWrap, openDrawer);
+      buildMobileList(mobileWrap, openDrawer);
+    }
 
     const dialog = document.getElementById("drawer");
     let lastFocused = null;
@@ -382,7 +398,13 @@
       const phase = phaseById(id);
       if (!phase) return;
       lastFocused = document.activeElement;
-      renderDrawer(phase, isOngoing);
+      // Checking a sub-stage off re-renders this same drawer in place, plus
+      // the chart/status strip behind it, so everything stays in sync.
+      function onToggle() {
+        renderDrawer(phase, isOngoing, onToggle);
+        rebuildChart();
+      }
+      renderDrawer(phase, isOngoing, onToggle);
       if (typeof dialog.showModal === "function") {
         dialog.showModal();
       } else {
@@ -421,8 +443,7 @@
       if (!inside) closeDrawer();
     });
 
-    buildDesktopChart(document.getElementById("timeline-chart-wrap"), openDrawer);
-    buildMobileList(document.getElementById("mobile-list-wrap"), openDrawer);
+    rebuildChart();
 
     document.getElementById("footer-updated").textContent = formatDateStr(ROADMAP.updated);
     document.getElementById("footer-updated-by").textContent = ROADMAP.updatedBy;

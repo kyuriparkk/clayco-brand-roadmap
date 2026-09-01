@@ -306,6 +306,12 @@ const ROADMAP = {
     dependsOn: ["launch"],
     risks: [],
     latestUpdate: null,
-    steps: [{ title: "Details to be defined", status: "todo", detail: [] }],
+    steps: [
+      {
+        title: "Brand Governance & Measurement",
+        status: "todo",
+        detail: ["Ongoing stewardship of the brand system once it's live."],
+      },
+    ],
   },
 };
