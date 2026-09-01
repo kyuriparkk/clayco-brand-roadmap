@@ -174,11 +174,11 @@
     const pct = phasePercent(phase);
     const fadeClass = phase.fade ? `fade-${phase.fade}` : "";
     const bleedClass = phase.bleed ? `bleed-${phase.bleed}` : "";
-    const activeClass = status === "active" ? "is-active" : "";
+    const todoClass = status === "todo" ? "is-todo" : "";
 
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = `stage ${fadeClass} ${bleedClass} ${activeClass}`.trim();
+    btn.className = `stage ${fadeClass} ${bleedClass} ${todoClass}`.trim();
     btn.style.gridColumn = `${phase.month} / span ${phase.span}`;
     btn.style.gridRow = `${rowIndex}`;
     const startDate = monthOffsetDate(phase.month);

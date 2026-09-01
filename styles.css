@@ -302,9 +302,9 @@ section.timeline-section {
   transition: filter 0.12s ease;
 }
 
-/* Currently-active stages get a darker fill so "happening now" reads at a
-   glance, distinct from completed-but-otherwise-same-color stages. */
-.stage.is-active { --bar-color: var(--red-dark); }
+/* Not-yet-started stages get a slightly lightened fill — still clearly and
+   strongly red, just a touch softer than the in-progress/complete bars. */
+.stage.is-todo { --bar-color: color-mix(in srgb, var(--red) 82%, white); }
 
 .stage:hover { filter: brightness(0.94); }
 .stage:focus-visible { filter: none; }
