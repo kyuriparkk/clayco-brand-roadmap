@@ -238,7 +238,29 @@
 
   // ---------- mobile stage list ----------
 
+  // A shared month scale sits above the list so every row's mini-bar below
+  // reads against the same 10-month ruler — a compact, rotated echo of the
+  // desktop Gantt rather than plain text.
+  function buildMobileScale(months) {
+    const wrap = document.createElement("div");
+    wrap.className = "mobile-scale";
+    for (let m = 1; m <= months; m++) {
+      const num = document.createElement("div");
+      num.className = "num";
+      num.textContent = MONTHS_SHORT[monthOffsetDate(m).getUTCMonth()];
+      wrap.appendChild(num);
+    }
+    const tick = document.createElement("div");
+    tick.className = "mobile-now-tick";
+    tick.style.left = `${((ROADMAP.progressMonth - 1) / months) * 100}%`;
+    wrap.appendChild(tick);
+    return wrap;
+  }
+
   function buildMobileList(root, onOpen) {
+    const months = ROADMAP.months;
+    root.appendChild(buildMobileScale(months));
+
     const list = document.createElement("ul");
     list.className = "mobile-stage-list";
     const curPhase = currentPhase();
@@ -256,14 +278,20 @@
       btn.className = `mobile-stage tier-${tier}`;
       btn.setAttribute(
         "aria-label",
-        `${phase.title}, ${STATUS_TEXT[status]}, ${pct}% complete. Open details.`
+        `${phase.title}, ${STATUS_TEXT[status]}, ${pct}% complete, ${dateRangeLabel(startDate, endDate)}. Open details.`
       );
 
       const isCurrent = phase.id === curPhase.id;
+      const fadeClass = phase.fade ? `fade-${phase.fade}` : "";
       btn.innerHTML = `
         <span class="stage-title-row">
           <span class="stage-title">${phase.title}</span>
           ${isCurrent ? '<span class="mobile-current-badge">Current</span>' : ""}
+        </span>
+        <span class="mobile-track">
+          <span class="mobile-seg ${fadeClass}" style="left:${((phase.month - 1) / months) * 100}%; width:${
+        (phase.span / months) * 100
+      }%"></span>
         </span>
         <span class="mobile-dates">${dateRangeLabel(startDate, endDate)}</span>
       `;
@@ -277,7 +305,7 @@
 
   // ---------- drawer ----------
 
-  function buildSubstep(step, currentStep, onToggle, reorderCtx) {
+  function buildSubstep(step, currentStep, onToggle, reorderCtx, ownerFallback) {
     const hasDetail = step.detail && step.detail.length;
     const row = document.createElement(hasDetail ? "details" : "div");
     row.className = `substep${step === currentStep ? " is-current" : ""}`;
@@ -303,47 +331,61 @@
     title.textContent = step.title;
     head.appendChild(title);
 
+    // Per-sub-stage assignee — falls back to the phase's owner until
+    // individual assignments are decided. Just the avatar shows in the
+    // collapsed row; the name only appears once expanded.
+    const owner = step.owner || ownerFallback;
+    if (owner) {
+      const avatar = document.createElement("span");
+      avatar.className = "owner-avatar substep-owner-avatar";
+      avatar.textContent = initials(owner);
+      avatar.setAttribute("aria-label", `Assigned to ${owner}`);
+      head.appendChild(avatar);
+    }
+
     if (reorderCtx) {
       const { array, index } = reorderCtx;
-      const reorder = document.createElement("span");
-      reorder.className = "substep-reorder";
+      const handle = document.createElement("span");
+      handle.className = "drag-handle";
+      handle.textContent = "⠿";
+      handle.setAttribute("aria-hidden", "true");
+      head.appendChild(handle);
 
-      const move = (delta) => {
-        const j = index + delta;
-        if (j < 0 || j >= array.length) return;
-        [array[index], array[j]] = [array[j], array[index]];
+      // Press-and-hold-to-drag reordering via the native HTML5 DnD API.
+      row.draggable = true;
+      row.dataset.index = String(index);
+      row.addEventListener("dragstart", (e) => {
+        row.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", String(index));
+      });
+      row.addEventListener("dragend", () => row.classList.remove("dragging"));
+      row.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        row.classList.add("drag-over");
+      });
+      row.addEventListener("dragleave", () => row.classList.remove("drag-over"));
+      row.addEventListener("drop", (e) => {
+        e.preventDefault();
+        row.classList.remove("drag-over");
+        const from = Number(e.dataTransfer.getData("text/plain"));
+        if (Number.isNaN(from) || from === index) return;
+        const [moved] = array.splice(from, 1);
+        array.splice(index, 0, moved);
         if (onToggle) onToggle();
-      };
-
-      const upBtn = document.createElement("button");
-      upBtn.type = "button";
-      upBtn.className = "reorder-btn";
-      upBtn.innerHTML = "&#9650;";
-      upBtn.disabled = index === 0;
-      upBtn.setAttribute("aria-label", `Move "${step.title}" up`);
-      upBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        move(-1);
       });
-
-      const downBtn = document.createElement("button");
-      downBtn.type = "button";
-      downBtn.className = "reorder-btn";
-      downBtn.innerHTML = "&#9660;";
-      downBtn.disabled = index === array.length - 1;
-      downBtn.setAttribute("aria-label", `Move "${step.title}" down`);
-      downBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        move(1);
-      });
-
-      reorder.appendChild(upBtn);
-      reorder.appendChild(downBtn);
-      head.appendChild(reorder);
     }
 
     row.appendChild(head);
     if (hasDetail) {
+      const body = document.createElement("div");
+      body.className = "sdetail-body";
+      if (owner) {
+        const ownerLine = document.createElement("div");
+        ownerLine.className = "substep-owner-full";
+        ownerLine.innerHTML = `<span class="owner-avatar" aria-hidden="true">${initials(owner)}</span>${owner}`;
+        body.appendChild(ownerLine);
+      }
       const ul = document.createElement("ul");
       ul.className = "sdetail";
       step.detail.forEach((d) => {
@@ -351,7 +393,8 @@
         li.textContent = d;
         ul.appendChild(li);
       });
-      row.appendChild(ul);
+      body.appendChild(ul);
+      row.appendChild(body);
     }
     return row;
   }
@@ -403,11 +446,12 @@
       // Reordering always operates on the real source array — for Launch,
       // items past its own steps belong to Governance's own (single-item)
       // list rather than Launch's.
-      const reorderCtx =
-        phase.id === "launch" && i >= phase.steps.length
-          ? { array: ROADMAP.ongoing.steps, index: i - phase.steps.length }
-          : { array: phase.steps, index: i };
-      stepsList.appendChild(buildSubstep(s, current, onToggle, reorderCtx));
+      const fromGovernance = phase.id === "launch" && i >= phase.steps.length;
+      const reorderCtx = fromGovernance
+        ? { array: ROADMAP.ongoing.steps, index: i - phase.steps.length }
+        : { array: phase.steps, index: i };
+      const ownerFallback = fromGovernance ? ROADMAP.ongoing.owner : phase.owner;
+      stepsList.appendChild(buildSubstep(s, current, onToggle, reorderCtx, ownerFallback));
     });
     subSection.appendChild(stepsList);
     body.appendChild(subSection);

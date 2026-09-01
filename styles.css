@@ -224,56 +224,16 @@ section.timeline-section {
   position: relative;
 }
 
-/* Presentation mode: the whole page fills exactly one viewport, no vertical
-   scroll — the chart flexes to fill whatever room is left under the header.
-   Mobile keeps normal document scroll for its vertical stage list instead. */
+/* Fixed, wide aspect ratio for the chart — its shape stays the same no
+   matter the window size; only its overall scale (via the shared 1240px
+   max-width) changes. Deliberately NOT stretched to fill viewport height,
+   so a tall window doesn't blow the bars up vertically. */
 @media (min-width: 641px) {
-  html, body { height: 100%; overflow: hidden; }
-  body { display: flex; flex-direction: column; }
-  section.timeline-section {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  section.timeline-section > .wrap {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  .timeline-chart-wrap {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  .timeline-scroll {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  #timeline-chart-wrap {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  .timeline-chart {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
   .chart-stack {
-    flex: 1 1 auto;
-    min-height: 0;
+    aspect-ratio: 2.3 / 1;
     display: flex;
     flex-direction: column;
   }
-  .ruler { flex: none; }
-  footer.site { flex: none; }
 }
 
 .gridlines {
@@ -398,20 +358,45 @@ section.timeline-section {
 
 /* Mobile: vertical stage sequence replaces the chart */
 
-.mobile-stage-list { display: none; }
+.mobile-stage-list, .mobile-scale { display: none; }
 
 @media (max-width: 640px) {
   .timeline-chart-wrap { display: none; }
+
+  /* Shared month ruler the per-row mini-bars below line up against —
+     a compact echo of the desktop Gantt instead of plain text dates. */
+  .mobile-scale {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    margin-bottom: 14px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .mobile-scale .num {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--ink-3);
+  }
+
+  .mobile-now-tick {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 2px;
+    background: var(--red-dark);
+  }
 
   .mobile-stage-list {
     display: block;
     list-style: none;
     margin: 0;
     padding: 0;
-    border-left: 2px solid var(--line);
   }
 
-  .mobile-stage-list li { position: relative; margin-bottom: 4px; }
+  .mobile-stage-list li { border-bottom: 1px solid var(--line); }
+  .mobile-stage-list li:last-child { border-bottom: none; }
 
   .mobile-stage {
     width: 100%;
@@ -419,31 +404,15 @@ section.timeline-section {
     background: none;
     border: none;
     font-family: inherit;
-    padding: 12px 0 12px 20px;
+    padding: 14px 0;
     cursor: pointer;
-    position: relative;
   }
-
-  .mobile-stage::before {
-    content: "";
-    position: absolute;
-    left: -6px;
-    top: 18px;
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--surface);
-    border: 2px solid var(--line-strong);
-  }
-
-  .mobile-stage.tier-live::before { border-color: var(--red); background: var(--red); }
-  .mobile-stage.tier-todo::before { border-color: var(--red-outline); }
-  .mobile-stage.tier-blocked::before { border-color: var(--amber); background: var(--amber-soft); }
 
   .mobile-stage .stage-title-row {
     display: flex;
     align-items: baseline;
     gap: 8px;
+    margin-bottom: 8px;
   }
 
   .mobile-current-badge {
@@ -457,13 +426,31 @@ section.timeline-section {
     padding: 1px 6px;
   }
 
+  /* The visual anchor of each row — where and how long this stage runs,
+     read against the shared scale above, matching the desktop bar colors. */
+  .mobile-track {
+    position: relative;
+    display: block;
+    height: 10px;
+    background: var(--surface-3);
+  }
+
+  .mobile-seg {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: var(--red);
+  }
+
+  .mobile-seg.fade-in { background: linear-gradient(90deg, rgba(233, 55, 43, 0) 0, var(--red) 16px); }
+  .mobile-seg.fade-out { background: linear-gradient(90deg, var(--red) 0, var(--red) 70%, rgba(233, 55, 43, 0) 100%); }
+
   .mobile-dates {
     display: block;
     font-size: var(--fs-meta);
     color: var(--ink-3);
-    margin-top: 3px;
+    margin-top: 6px;
   }
-
 }
 
 /* ---------- Footer ---------- */
@@ -621,6 +608,23 @@ dialog#drawer::backdrop {
   letter-spacing: 0.02em;
 }
 
+.substep-owner-avatar {
+  width: 18px;
+  height: 18px;
+  font-size: 8px;
+  margin-left: auto;
+}
+
+.substep-owner-full {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin: 0 0 10px 24px;
+}
+
 .drawer-body {
   flex: 1 1 auto;
   overflow-y: auto;
@@ -680,25 +684,21 @@ dialog#drawer::backdrop {
   color: #fff;
 }
 
-.substep-reorder {
-  display: flex;
-  flex-direction: column;
+.drag-handle {
   flex: none;
   margin-left: 10px;
-}
-
-.reorder-btn {
-  border: none;
-  background: none;
-  padding: 1px 4px;
-  font-size: 8px;
+  font-size: 15px;
   line-height: 1;
-  color: var(--ink-3);
-  cursor: pointer;
+  color: var(--line-strong);
+  cursor: grab;
+  user-select: none;
 }
 
-.reorder-btn:hover:not(:disabled) { color: var(--red-dark); }
-.reorder-btn:disabled { color: var(--line-strong); cursor: default; }
+.substep:hover .drag-handle { color: var(--ink-3); }
+
+.substep.dragging { opacity: 0.4; }
+
+.substep.drag-over { border-top: 2px solid var(--red-dark); }
 
 .substeps {
   list-style: none;
