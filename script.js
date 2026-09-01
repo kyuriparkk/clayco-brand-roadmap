@@ -606,7 +606,21 @@
 
     const objective = document.createElement("div");
     objective.className = "detail-field";
-    objective.innerHTML = `<h4>Objective</h4><p>${phase.blurb}</p>`;
+    objective.innerHTML = "<h4>Objective</h4>";
+    if (step.detail && step.detail.length) {
+      const ul = document.createElement("ul");
+      ul.className = "sdetail";
+      step.detail.forEach((d) => {
+        const li = document.createElement("li");
+        li.textContent = d;
+        ul.appendChild(li);
+      });
+      objective.appendChild(ul);
+    } else {
+      const p = document.createElement("p");
+      p.textContent = phase.blurb;
+      objective.appendChild(p);
+    }
     col.appendChild(objective);
 
     container.appendChild(col);
