@@ -10,47 +10,82 @@
 <body>
   <header class="site">
     <div class="wrap">
-      <h1>Clayco Brand Roadmap</h1>
-      <p class="sub">
-        A live look at where the enterprise brand project stands — from research
-        through launch. Click any stage on the timeline for detail.
-      </p>
-      <div class="legend">
-        <span class="dot"><span class="swatch done"></span>Complete</span>
-        <span class="dot"><span class="swatch active"></span>In progress</span>
-        <span class="dot"><span class="swatch todo"></span>Not started</span>
+      <div class="header-top">
+        <div class="title-block">
+          <span class="accent-mark" aria-hidden="true"></span>
+          <div>
+            <h1>Clayco Brand Roadmap</h1>
+            <p class="sub">Where the enterprise brand project stands, from research through launch.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-strip">
+        <div class="status-item">
+          <span class="status-label">Current phase</span>
+          <span class="status-value" id="stat-phase">—</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Overall completion</span>
+          <span class="status-value accent-red" id="stat-progress">—</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Project health</span>
+          <span class="status-value" id="stat-health">—</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Target launch</span>
+          <span class="status-value" id="stat-launch">—</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Last updated</span>
+          <span class="status-value" id="stat-updated">—</span>
+        </div>
       </div>
     </div>
   </header>
 
-  <section class="overview">
+  <section class="timeline-section">
     <div class="wrap">
-      <div class="overview-head">
-        <h2>Timeline</h2>
-        <span class="months-badge"><strong id="months-count"></strong> months</span>
+      <div class="section-head">
+        <h2>10-Month Timeline</h2>
+        <div class="legend">
+          <span class="item"><span class="swatch done"></span>Complete</span>
+          <span class="item"><span class="swatch active"></span>In progress</span>
+          <span class="item"><span class="swatch todo"></span>Not started</span>
+          <span class="item"><span class="swatch blocked"></span>Blocked / delayed</span>
+        </div>
       </div>
-      <div class="gantt" id="gantt"></div>
-      <button class="ongoing-trigger" id="ongoing-trigger">
-        Brand Governance &amp; Measurement — ongoing <span class="arrow">→</span>
-      </button>
+
+      <div class="timeline-chart-wrap">
+        <div class="timeline-scroll">
+          <div id="timeline-chart-wrap"></div>
+        </div>
+      </div>
+
+      <div id="mobile-list-wrap"></div>
     </div>
   </section>
 
   <footer class="site">
-    <div class="wrap">
-      Last updated <span id="updated"></span> · edit <code>roadmap-data.js</code> and push to update this page.
+    <div class="wrap" style="display:flex; gap:18px; flex-wrap:wrap;">
+      <span>Last updated <strong id="footer-updated"></strong></span>
+      <span>Updated by <strong id="footer-updated-by"></strong></span>
+      <span>Next update <strong id="footer-next-update"></strong></span>
     </div>
   </footer>
 
-  <div class="modal-overlay" id="modal-overlay" hidden>
-    <div class="modal-card" role="dialog" aria-modal="true">
-      <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
-      <div id="modal-body"></div>
+  <dialog id="drawer" aria-labelledby="drawer-title">
+    <div class="drawer-inner">
+      <div class="drawer-header">
+        <button class="drawer-close" id="drawer-close" aria-label="Close details">✕</button>
+        <div id="drawer-header-content"></div>
+      </div>
+      <div class="drawer-body" id="drawer-body-content"></div>
     </div>
-  </div>
+  </dialog>
 
   <script src="roadmap-data.js"></script>
   <script src="script.js"></script>
-  <script>document.getElementById("months-count").textContent = ROADMAP.months;</script>
 </body>
 </html>

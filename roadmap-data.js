@@ -1,33 +1,54 @@
 /**
- * Clayco Brand Roadmap — content + status data.
+ * Clayco Brand Roadmap — single source of truth for content + status.
  *
- * THIS IS THE FILE TO EDIT as the project moves forward.
- * Nothing else in the site needs to change when a stage's status changes —
- * update `status` fields here, commit, push. GitHub Pages redeploys automatically.
+ * Edit this file as the project moves forward, commit, and push — everything
+ * else (timeline, status strip, drawer) is derived from it automatically.
  *
- * status values:
- *   "done"        — complete
- *   "active"      — currently in progress (shows the "You are here" marker)
- *   "todo"        — not started yet
+ * Step status values: "done" | "active" | "blocked" | "todo"
+ *   done    — complete
+ *   active  — currently in progress
+ *   blocked — stuck / delayed, needs attention (shown with a warning treatment)
+ *   todo    — not started yet
  *
- * A phase's own status is derived automatically from its steps (see script.js),
- * so you normally only need to update the `status` on individual `steps`.
+ * A phase's own status, percent-complete, and "current sub-stage" are all
+ * derived automatically from its `steps` (see script.js) — you only need to
+ * update step-level `status`.
+ *
+ * Dates: `projectStart` anchors the 1–10 month axis to the calendar using
+ * 30-day months. Adjust it if the real kickoff date changes; every other
+ * date (phase ranges, target launch, the current-position marker) recomputes
+ * from it plus `progressMonth`.
  */
 
 const ROADMAP = {
   months: 10,
-  updated: "2026-09-01",
-  // Where the "You are here" marker sits on the 1–10 month axis.
+  projectStart: "2026-07-14",
+  // Where the current-position marker sits on the 1–10 month axis.
   // Currently: wrapping up Research, starting Brand Strategy.
   progressMonth: 2.6,
+  updated: "2026-09-01",
+  updatedBy: "Kyuri Park",
+  nextUpdate: "2026-09-15",
+  health: {
+    status: "on-track", // "on-track" | "at-risk" | "delayed"
+    note: "Research wrapping up on schedule; Brand Strategy kickoff underway.",
+  },
+
   phases: [
     {
       id: "research",
       month: 1,
       span: 3,
-      fade: "in",
       title: "Research & Discovery",
       blurb: "Interview synthesis, audience research, competitive review, and current-brand audit.",
+      owner: "Strategy & Insights Team",
+      approvalGate: "Research synthesis reviewed and approved by brand leadership",
+      dependsOn: [],
+      risks: [],
+      latestUpdate: {
+        date: "2026-09-01",
+        text: "Interview synthesis, audience research, competitive review, and current-brand audit are complete. Research synthesis is in progress and expected to close out this week.",
+      },
       steps: [
         {
           title: "Interview synthesis",
@@ -72,6 +93,14 @@ const ROADMAP = {
       span: 2,
       title: "Brand Strategy",
       blurb: "Foundation, positioning, architecture, and language/naming.",
+      owner: "Strategy & Insights Team",
+      approvalGate: "Brand foundation & positioning approved by executive sponsor",
+      dependsOn: ["research"],
+      risks: [],
+      latestUpdate: {
+        date: "2026-09-01",
+        text: "Kickoff underway — brand foundation workshop scheduled.",
+      },
       steps: [
         {
           title: "Brand foundation",
@@ -110,9 +139,15 @@ const ROADMAP = {
       id: "design-system",
       month: 3,
       span: 4,
-      fade: "out",
       title: "Design System",
-      blurb: "Creative direction, logo, type, color, imagery, and the graphic + digital systems. (+ John)",
+      blurb: "Creative direction, logo, type, color, imagery, and the graphic + digital systems.",
+      owner: "Design Team (+ John)",
+      approvalGate: "Design system approved by creative direction (John) and brand leadership",
+      dependsOn: ["brand-strategy"],
+      risks: [
+        "Design capacity is dependent on external creative support (+ John) — confirm availability before this phase starts.",
+      ],
+      latestUpdate: null,
       steps: [
         {
           title: "Creative direction",
@@ -171,9 +206,13 @@ const ROADMAP = {
       id: "website",
       month: 5,
       span: 2,
-      fade: "out",
       title: "Website",
       blurb: "Research, requirements, architecture, prototypes, content, and launch prep.",
+      owner: "Digital / Web Team",
+      approvalGate: "Website design & content approved prior to build handoff",
+      dependsOn: ["brand-strategy", "design-system"],
+      risks: [],
+      latestUpdate: null,
       steps: [
         { title: "Website research", status: "todo", detail: [] },
         { title: "Requirements", status: "todo", detail: [] },
@@ -189,6 +228,11 @@ const ROADMAP = {
       span: 2,
       title: "Brand Guidelines",
       blurb: "Codify the full system, plus templates and tools for every application.",
+      owner: "Brand Team",
+      approvalGate: "Final guidelines approved for org-wide distribution",
+      dependsOn: ["design-system"],
+      risks: [],
+      latestUpdate: null,
       steps: [
         {
           title: "Brand guideline",
@@ -217,15 +261,24 @@ const ROADMAP = {
       span: 1,
       title: "Implementation & Migration",
       blurb: "Roll the new system out across the org.",
+      owner: "Program Management",
+      approvalGate: "Rollout plan approved by Program Management",
+      dependsOn: ["brand-guidelines"],
+      risks: [],
+      latestUpdate: null,
       steps: [{ title: "Details to be defined", status: "todo", detail: [] }],
     },
     {
       id: "launch",
       month: 9,
       span: 1,
-      fade: "out",
       title: "Launch",
       blurb: "Train, launch internally, launch externally, then iterate on feedback.",
+      owner: "Marketing & Communications",
+      approvalGate: "Launch readiness sign-off from executive sponsor",
+      dependsOn: ["implementation"],
+      risks: [],
+      latestUpdate: null,
       steps: [
         { title: "Training", status: "todo", detail: [] },
         { title: "Internal launch", status: "todo", detail: [] },
@@ -234,11 +287,17 @@ const ROADMAP = {
       ],
     },
   ],
-  // Ongoing phase — not part of the 10-month bar chart, continues after launch.
+
+  // Continuous foundation beneath the whole timeline — not date-boxed.
   ongoing: {
     id: "governance",
     title: "Brand Governance & Measurement",
     blurb: "Ongoing stewardship of the brand system once it's live.",
+    owner: "Brand Council",
+    approvalGate: "Reviewed quarterly by the Brand Council",
+    dependsOn: ["launch"],
+    risks: [],
+    latestUpdate: null,
     steps: [{ title: "Details to be defined", status: "todo", detail: [] }],
   },
 };
