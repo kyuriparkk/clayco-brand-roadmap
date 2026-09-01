@@ -672,6 +672,7 @@ dialog#drawer::backdrop {
   display: grid;
   grid-template-columns: 260px 1fr;
   gap: 0;
+  min-height: 100%;
 }
 
 .substage-nav {
