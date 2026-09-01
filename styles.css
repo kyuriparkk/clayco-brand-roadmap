@@ -21,7 +21,7 @@
   --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
 
   /* Type scale */
-  --fs-page-title: 26px;
+  --fs-page-title: 38px;
   --fs-eyebrow: 12px;
   --fs-stage-title: 15px;
   --fs-drawer-title: 20px;
@@ -101,13 +101,6 @@ header.site {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.title-block .accent-mark {
-  width: 8px;
-  height: 8px;
-  background: var(--red);
-  flex: none;
 }
 
 header.site h1 {
