@@ -108,12 +108,14 @@
     return total ? Math.round((sum / total) * 100) : 0;
   }
 
-  function currentPhase() {
+  // All phases actively underway right now — there can be more than one
+  // (e.g. Research wrapping up while Brand Strategy has already started).
+  function currentPhases() {
     const withActivity = ROADMAP.phases.filter((p) => phaseStatus(p) === "active" || phaseStatus(p) === "blocked");
-    if (withActivity.length) return withActivity.reduce((a, b) => (b.month > a.month ? b : a));
+    if (withActivity.length) return withActivity;
     const started = ROADMAP.phases.filter((p) => phaseStatus(p) !== "todo");
-    if (started.length) return started.reduce((a, b) => (b.month > a.month ? b : a));
-    return ROADMAP.phases[0];
+    if (started.length) return [started.reduce((a, b) => (b.month > a.month ? b : a))];
+    return [ROADMAP.phases[0]];
   }
 
   function phaseById(id) {
@@ -124,8 +126,9 @@
   // ---------- status strip ----------
 
   function renderStatusStrip() {
-    const cur = currentPhase();
-    document.getElementById("stat-phase").textContent = cur.title;
+    document.getElementById("stat-phase").textContent = currentPhases()
+      .map((p) => p.title)
+      .join(", ");
 
     const pct = overallPercent();
     document.getElementById("stat-progress").innerHTML = `<span class="big">${pct}%</span> complete`;
@@ -254,7 +257,7 @@
 
     const list = document.createElement("ul");
     list.className = "mobile-stage-list";
-    const curPhase = currentPhase();
+    const curPhases = currentPhases();
 
     ROADMAP.phases.forEach((phase) => {
       const status = phaseStatus(phase);
@@ -272,7 +275,7 @@
         `${phase.title}, ${STATUS_TEXT[status]}, ${pct}% complete, ${dateRangeLabel(startDate, endDate)}. Open details.`
       );
 
-      const isCurrent = phase.id === curPhase.id;
+      const isCurrent = curPhases.some((p) => p.id === phase.id);
       const fadeClass = phase.fade ? `fade-${phase.fade}` : "";
       btn.innerHTML = `
         <span class="stage-title-row">
