@@ -41,6 +41,13 @@
     return `${MONTHS_SHORT[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
   }
 
+  // The one place we want the viewer's actual local calendar day (every
+  // other date in this app is a synthetic UTC-anchored project date).
+  function formatToday() {
+    const d = new Date();
+    return `${MONTHS_SHORT[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+  }
+
   function formatDateStr(iso) {
     return formatFull(parseISO(iso));
   }
@@ -131,14 +138,7 @@
     const pct = overallPercent();
     document.getElementById("stat-progress").innerHTML = `<span class="big">${pct}%</span> complete`;
 
-    const health = ROADMAP.health;
-    const healthLabels = { "on-track": "On Track", "at-risk": "At Risk", delayed: "Delayed" };
-    document.getElementById("stat-health").innerHTML =
-      `<span class="health-dot ${health.status}"></span>${healthLabels[health.status] || health.status}`;
-
     document.getElementById("stat-launch").textContent = formatFull(parseISO(ROADMAP.targetLaunch));
-
-    document.getElementById("stat-updated").textContent = formatDateStr(ROADMAP.updated);
   }
 
   // ---------- desktop/tablet chart ----------
@@ -216,10 +216,11 @@
     stack.className = "chart-stack";
     stack.appendChild(buildGridlines(months));
 
-    const nowLine = document.createElement("div");
-    nowLine.className = "now-line";
-    nowLine.style.left = `${((ROADMAP.progressMonth - 1) / months) * 100}%`;
-    stack.appendChild(nowLine);
+    const nowMarker = document.createElement("div");
+    nowMarker.className = "now-marker";
+    nowMarker.style.left = `${((ROADMAP.progressMonth - 1) / months) * 100}%`;
+    nowMarker.innerHTML = `<span class="now-tag">${formatToday()}</span><span class="now-line"></span>`;
+    stack.appendChild(nowMarker);
 
     const grid = document.createElement("div");
     grid.className = "stage-grid";
@@ -231,9 +232,6 @@
     chart.appendChild(stack);
     chart.appendChild(buildRuler(months));
     root.appendChild(chart);
-
-    const nowDate = monthOffsetDate(ROADMAP.progressMonth);
-    document.getElementById("now-caption").textContent = `Current position — ${formatFull(nowDate)}`;
   }
 
   // ---------- mobile stage list ----------
@@ -423,13 +421,6 @@
       <h3 id="drawer-title">${phase.title}</h3>
       <div class="drawer-subline">
         <span class="pill status-${status}">${STATUS_TEXT[status]}</span>
-        ${
-          phase.owner
-            ? `<span class="owner-chip"><span class="owner-avatar" aria-hidden="true">${initials(
-                phase.owner
-              )}</span>${phase.owner}</span>`
-            : ""
-        }
         <span class="drawer-meta-text">${dateText}</span>
       </div>
     `;
@@ -457,6 +448,9 @@
     body.appendChild(subSection);
 
     const rows = [];
+    if (phase.owner) {
+      rows.push(["Owner", `<span class="owner-avatar" aria-hidden="true">${initials(phase.owner)}</span>${phase.owner}`]);
+    }
     if (phase.approvalGate) rows.push(["Approval gate", phase.approvalGate]);
     const deps = dependsOnTitles(phase);
     if (deps.length) rows.push(["Depends on", deps.join(", ")]);
@@ -471,13 +465,6 @@
           .map(([k, v]) => `<div class="drow"><span class="drow-k">${k}</span><span class="drow-v">${v}</span></div>`)
           .join("");
       body.appendChild(detailBlock);
-    }
-
-    if (phase.latestUpdate) {
-      const update = document.createElement("p");
-      update.className = "update-caption";
-      update.innerHTML = `<strong>${formatDateStr(phase.latestUpdate.date)}</strong> — ${phase.latestUpdate.text}`;
-      body.appendChild(update);
     }
   }
 

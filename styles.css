@@ -159,17 +159,6 @@ header.site p.sub {
 
 .status-value.accent-red { color: var(--red-dark); }
 
-.health-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex: none;
-  display: inline-block;
-}
-
-.health-dot.on-track { background: var(--ink-2); }
-.health-dot.at-risk { background: var(--amber); }
-.health-dot.delayed { background: var(--red); }
 
 @media (max-width: 900px) {
   .status-strip { flex-wrap: wrap; gap: 14px 0; }
@@ -184,30 +173,7 @@ header.site p.sub {
 /* ---------- Timeline section ---------- */
 
 section.timeline-section {
-  padding: 12px 0 6px;
-}
-
-.section-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 14px;
-  flex: none;
-}
-
-.section-head h2 {
-  font-size: var(--fs-eyebrow);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--ink-2);
-  margin: 0;
-}
-
-.now-caption {
-  font-size: var(--fs-meta);
-  font-weight: 700;
-  color: var(--red-dark);
+  padding: 24px 0 6px;
 }
 
 /* Desktop/tablet chart */
@@ -222,6 +188,7 @@ section.timeline-section {
 
 .chart-stack {
   position: relative;
+  padding-top: 26px;
 }
 
 /* Fixed, wide aspect ratio for the chart — its shape stays the same no
@@ -230,7 +197,7 @@ section.timeline-section {
    so a tall window doesn't blow the bars up vertically. */
 @media (min-width: 641px) {
   .chart-stack {
-    aspect-ratio: 2.3 / 1;
+    aspect-ratio: 1.9 / 1;
     display: flex;
     flex-direction: column;
   }
@@ -238,7 +205,10 @@ section.timeline-section {
 
 .gridlines {
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  top: 26px;
+  bottom: 0;
   pointer-events: none;
   z-index: 0;
 }
@@ -251,15 +221,37 @@ section.timeline-section {
   border-left: 1px dashed var(--line);
 }
 
-/* Bounded exactly to the bars — never longer or shorter than the stages
-   themselves, and never drawn over their text. */
-.now-line {
+/* Reserves a small strip above the bars for today's date, and bounds the
+   line itself exactly to the bars — never longer or shorter than the
+   stages, and never drawn over their text. Today's date recomputes on
+   every page load, so it's always current. */
+.now-marker {
+  position: absolute;
+  top: -26px;
+  bottom: 0;
+  z-index: 1;
+}
+
+.now-marker .now-tag {
   position: absolute;
   top: 0;
+  left: 0;
+  transform: translateX(-50%);
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  color: var(--red-dark);
+  white-space: nowrap;
+  background: var(--surface);
+  padding: 0 4px;
+}
+
+.now-marker .now-line {
+  position: absolute;
+  top: 26px;
   bottom: 0;
+  left: 0;
   width: 2px;
   background: var(--red-dark);
-  z-index: 1;
 }
 
 .stage-grid {
@@ -267,7 +259,7 @@ section.timeline-section {
   z-index: 2;
   display: grid;
   grid-template-columns: repeat(10, 1fr);
-  row-gap: 8px;
+  row-gap: 20px;
   column-gap: 0;
 }
 
@@ -586,16 +578,6 @@ dialog#drawer::backdrop {
   white-space: nowrap;
 }
 
-.owner-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink-2);
-  flex: none;
-}
-
 /* Stands in for a real profile photo until assignments are finalized. */
 .owner-avatar {
   width: 20px;
@@ -766,7 +748,7 @@ details.substep > summary.substep-head::-webkit-details-marker { display: none; 
   padding-top: 1px;
 }
 
-.drow-v { flex: 1 1 auto; color: var(--ink-2); }
+.drow-v { flex: 1 1 auto; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
 
 .update-caption {
   font-size: 12.5px;
