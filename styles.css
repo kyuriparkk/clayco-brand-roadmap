@@ -22,11 +22,8 @@
 
   /* Type scale */
   --fs-page-title: 38px;
-  --fs-eyebrow: 12px;
-  --fs-stage-title: 15px;
-  --fs-drawer-title: 20px;
+  --fs-drawer-title: 24px;
   --fs-meta: 11px;
-  --fs-body: 14px;
   --fs-detail: 13.5px;
 
   --radius: 5px;
@@ -109,14 +106,6 @@ header.site h1 {
   letter-spacing: -0.01em;
   margin: 0;
   color: var(--ink);
-}
-
-header.site p.sub {
-  font-size: var(--fs-body);
-  color: var(--ink-2);
-  margin: 4px 0 0;
-  max-width: 560px;
-  line-height: 1.5;
 }
 
 /* Status strip */
@@ -614,20 +603,6 @@ dialog#drawer::backdrop {
   padding: 18px 24px 26px;
 }
 
-.drawer-section { margin-bottom: 18px; }
-
-.drawer-section:last-child { margin-bottom: 0; }
-
-.drawer-section h4 {
-  font-size: var(--fs-meta);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--ink-3);
-  margin: 0 0 8px;
-}
-
-
 /* Three click-to-cycle stages: not started (empty ring) → in progress
    (ring + center dot) → complete (filled with a check). */
 .step-check {
@@ -760,7 +735,7 @@ dialog#drawer::backdrop {
 }
 
 .detail-title {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 800;
   margin: 0 0 10px;
   color: var(--ink);
@@ -797,7 +772,7 @@ dialog#drawer::backdrop {
 }
 
 
-.drow-v { flex: 1 1 auto; color: var(--ink-2); display: flex; align-items: center; flex-wrap: wrap; gap: 6px 16px; }
+.owner-list { flex: 1 1 auto; color: var(--ink-2); display: flex; align-items: center; flex-wrap: wrap; gap: 6px 16px; }
 
 @media (max-width: 640px) {
   .drawer-columns { grid-template-columns: 1fr; margin: -18px -20px; }
@@ -887,14 +862,3 @@ dialog#drawer::backdrop {
 }
 
 .add-owner-option:hover { background: var(--surface-2); }
-
-.update-caption {
-  font-size: 12.5px;
-  color: var(--ink-3);
-  line-height: 1.55;
-  margin: 18px 0 0;
-  padding-top: 14px;
-  border-top: 1px solid var(--line);
-}
-
-.update-caption strong { color: var(--ink-2); }

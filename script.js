@@ -466,7 +466,7 @@
 
   function buildOwnerField(ownersToShow, ensureOwnersArray, onToggle) {
     const wrap = document.createElement("span");
-    wrap.className = "drow-v";
+    wrap.className = "owner-list";
     ownersToShow.forEach((name) => {
       const pair = document.createElement("span");
       pair.className = "owner-pair";
