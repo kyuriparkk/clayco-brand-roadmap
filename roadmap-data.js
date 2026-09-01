@@ -41,7 +41,7 @@ const ROADMAP = {
     {
       id: "research",
       month: 1,
-      span: 3,
+      span: 2,
       fade: "in",
       title: "Research & Discovery",
       blurb: "Interview synthesis, audience research, competitive review, and current-brand audit.",
@@ -93,7 +93,7 @@ const ROADMAP = {
     },
     {
       id: "brand-strategy",
-      month: 2,
+      month: 1,
       span: 3,
       title: "Brand Strategy",
       blurb: "Foundation, positioning, architecture, and language/naming.",
@@ -141,7 +141,7 @@ const ROADMAP = {
     },
     {
       id: "design-system",
-      month: 3,
+      month: 2,
       span: 5,
       fade: "out",
       title: "Design System",
@@ -230,7 +230,7 @@ const ROADMAP = {
     },
     {
       id: "brand-guidelines",
-      month: 6,
+      month: 7,
       span: 3,
       title: "Brand Guidelines",
       blurb: "Codify the full system, plus templates and tools for every application.",
@@ -264,7 +264,7 @@ const ROADMAP = {
     {
       id: "implementation",
       month: 8,
-      span: 2,
+      span: 3,
       title: "Implementation & Migration",
       blurb: "Roll the new system out across the org.",
       owner: "Program Management",
@@ -276,8 +276,8 @@ const ROADMAP = {
     },
     {
       id: "launch",
-      month: 9,
-      span: 2,
+      month: 10,
+      span: 1,
       fade: "out",
       title: "Launch",
       blurb: "Train, launch internally, launch externally, then iterate on feedback.",

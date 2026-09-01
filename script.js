@@ -45,6 +45,12 @@
     return formatFull(parseISO(iso));
   }
 
+  function dateRangeLabel(startDate, endDate) {
+    const start = formatMonthYear(startDate);
+    const end = formatMonthYear(endDate);
+    return start === end ? start : `${start} – ${end}`;
+  }
+
   // ---------- derived data ----------
 
   function phaseStatus(phase) {
@@ -181,7 +187,7 @@
     const endDate = addDays(monthOffsetDate(phase.month + phase.span), -1);
     btn.setAttribute(
       "aria-label",
-      `${phase.title}, ${STATUS_TEXT[status]}, ${pct}% complete, ${formatMonthYear(startDate)} to ${formatMonthYear(endDate)}. Open details.`
+      `${phase.title}, ${STATUS_TEXT[status]}, ${pct}% complete, ${dateRangeLabel(startDate, endDate)}. Open details.`
     );
 
     btn.innerHTML =
@@ -198,8 +204,8 @@
     const chart = document.createElement("div");
     chart.className = "timeline-chart";
 
-    // Bars + governance band share one positioning context so gridlines and
-    // the current-position line are bounded to exactly that area — no more,
+    // Bars share one positioning context so gridlines and the
+    // current-position line are bounded to exactly that area — no more,
     // no less — and never run into the ruler below.
     const stack = document.createElement("div");
     stack.className = "chart-stack";
@@ -215,16 +221,6 @@
     ROADMAP.phases.forEach((phase, i) => {
       grid.appendChild(buildStageButton(phase, i + 1, onOpen));
     });
-
-    const govBtn = document.createElement("button");
-    govBtn.type = "button";
-    govBtn.className = "stage governance-bar";
-    govBtn.style.gridColumn = "1 / -1";
-    govBtn.style.gridRow = `${ROADMAP.phases.length + 1}`;
-    govBtn.setAttribute("aria-label", `${ROADMAP.ongoing.title} — continuous foundation beneath the roadmap. Open details.`);
-    govBtn.innerHTML = `<span class="stage-title">${ROADMAP.ongoing.title}</span>`;
-    govBtn.addEventListener("click", () => onOpen(ROADMAP.ongoing.id));
-    grid.appendChild(govBtn);
 
     stack.appendChild(grid);
     chart.appendChild(stack);
@@ -264,23 +260,12 @@
           <span class="stage-title">${phase.title}</span>
           ${isCurrent ? '<span class="mobile-current-badge">Current</span>' : ""}
         </span>
-        <span class="mobile-dates">${formatMonthYear(startDate)} – ${formatMonthYear(endDate)}</span>
+        <span class="mobile-dates">${dateRangeLabel(startDate, endDate)}</span>
       `;
       btn.addEventListener("click", () => onOpen(phase.id));
       li.appendChild(btn);
       list.appendChild(li);
     });
-
-    const govLi = document.createElement("li");
-    govLi.className = "governance-band-mobile";
-    const govBtn = document.createElement("button");
-    govBtn.type = "button";
-    govBtn.className = "mobile-stage tier-live";
-    govBtn.setAttribute("aria-label", `${ROADMAP.ongoing.title} — continuous foundation. Open details.`);
-    govBtn.innerHTML = `<span class="stage-title-row"><span class="stage-title">${ROADMAP.ongoing.title}</span></span>`;
-    govBtn.addEventListener("click", () => onOpen(ROADMAP.ongoing.id));
-    govLi.appendChild(govBtn);
-    list.appendChild(govLi);
 
     root.appendChild(list);
   }
@@ -325,7 +310,7 @@
     const endDate = isOngoing ? null : addDays(monthOffsetDate(phase.month + phase.span), -1);
     const metaLine = [
       phase.owner,
-      isOngoing ? "Ongoing" : `${formatMonthYear(startDate)} – ${formatMonthYear(endDate)}`,
+      isOngoing ? "Ongoing" : dateRangeLabel(startDate, endDate),
     ]
       .filter(Boolean)
       .join(" · ");
@@ -377,6 +362,27 @@
       update.className = "update-caption";
       update.innerHTML = `<strong>${formatDateStr(phase.latestUpdate.date)}</strong> — ${phase.latestUpdate.text}`;
       body.appendChild(update);
+    }
+
+    // Governance & Measurement isn't its own stage on the timeline — it's
+    // the continuous foundation that starts once Launch ships, so it lives
+    // inside the Launch detail instead.
+    if (phase.id === "launch") {
+      const gov = ROADMAP.ongoing;
+      const govSection = document.createElement("div");
+      govSection.className = "drawer-section governance-inline";
+      govSection.innerHTML = `<h4>${gov.title} <span class="h4-count">Ongoing</span></h4><p>${gov.blurb}</p>`;
+      const govSteps = document.createElement("div");
+      govSteps.className = "substeps";
+      gov.steps.forEach((s) => govSteps.appendChild(buildSubstep(s, null)));
+      govSection.appendChild(govSteps);
+      if (gov.approvalGate) {
+        const gateRow = document.createElement("div");
+        gateRow.className = "drow";
+        gateRow.innerHTML = `<span class="drow-k">Approval gate</span><span class="drow-v">${gov.approvalGate}</span>`;
+        govSection.appendChild(gateRow);
+      }
+      body.appendChild(govSection);
     }
   }
 

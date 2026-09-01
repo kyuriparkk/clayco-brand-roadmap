@@ -293,8 +293,8 @@ section.timeline-section {
   border-left: 1px dashed var(--line);
 }
 
-/* Bounded exactly to the bars + governance band — never longer or shorter
-   than the stages themselves, and never drawn over their text. */
+/* Bounded exactly to the bars — never longer or shorter than the stages
+   themselves, and never drawn over their text. */
 .now-line {
   position: absolute;
   top: 0;
@@ -317,8 +317,8 @@ section.timeline-section {
   .stage-grid {
     flex: 1 1 auto;
     min-height: 0;
-    /* 7 phases + governance, sharing whatever height is available. */
-    grid-template-rows: repeat(8, minmax(34px, 1fr));
+    /* 7 phases, sharing whatever height is available. */
+    grid-template-rows: repeat(7, minmax(34px, 1fr));
   }
 }
 
@@ -361,14 +361,6 @@ section.timeline-section {
 
 .stage.fade-in .stage-title,
 .stage.fade-out .stage-title { color: #fff; }
-
-/* Governance — same shape/typography as every stage, in flat gray so it
-   reads as the (non-red, not date-boxed) foundation beneath them. */
-.governance-bar {
-  background: var(--ink-3);
-  margin-top: 4px;
-}
-.governance-bar .stage-title { color: #fff; }
 
 /* Ruler */
 
@@ -462,10 +454,6 @@ section.timeline-section {
     margin-top: 3px;
   }
 
-  .governance-band-mobile {
-    margin-top: 8px;
-    padding-left: 20px;
-  }
 }
 
 /* ---------- Footer ---------- */
@@ -723,3 +711,11 @@ details.substep > summary.substep-head::-webkit-details-marker { display: none; 
 }
 
 .update-caption strong { color: var(--ink-2); }
+
+.governance-inline {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--line-strong);
+}
+
+.governance-inline .drow { margin-top: 8px; }
