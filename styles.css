@@ -272,7 +272,7 @@ section.timeline-section {
   z-index: 2;
   display: grid;
   grid-template-columns: repeat(10, 1fr);
-  row-gap: 30px;
+  row-gap: 8px;
   column-gap: 0;
 }
 
