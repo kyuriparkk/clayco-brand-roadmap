@@ -455,24 +455,47 @@
     subSection.appendChild(stepsList);
     body.appendChild(subSection);
 
-    const rows = [];
-    if (phase.owners && phase.owners.length) {
-      const ownerValue = phase.owners
-        .map((name) => `<span class="owner-pair"><span class="owner-avatar" aria-hidden="true">${initials(name)}</span>${name}</span>`)
-        .join("");
-      rows.push(["Owner", ownerValue]);
-    }
+    if (!phase.owners) phase.owners = [];
 
-    if (rows.length) {
-      const detailBlock = document.createElement("div");
-      detailBlock.className = "drawer-section";
-      detailBlock.innerHTML =
-        `<h4>Details</h4>` +
-        rows
-          .map(([k, v]) => `<div class="drow"><span class="drow-k">${k}</span><span class="drow-v">${v}</span></div>`)
-          .join("");
-      body.appendChild(detailBlock);
-    }
+    const detailBlock = document.createElement("div");
+    detailBlock.className = "drawer-section";
+    detailBlock.innerHTML = "<h4>Details</h4>";
+
+    const ownerRow = document.createElement("div");
+    ownerRow.className = "drow";
+    const ownerKey = document.createElement("span");
+    ownerKey.className = "drow-k";
+    ownerKey.textContent = "Owner";
+    ownerRow.appendChild(ownerKey);
+
+    const ownerValue = document.createElement("span");
+    ownerValue.className = "drow-v";
+    phase.owners.forEach((name) => {
+      const pair = document.createElement("span");
+      pair.className = "owner-pair";
+      pair.innerHTML = `<span class="owner-avatar" aria-hidden="true">${initials(name)}</span>${name}`;
+      ownerValue.appendChild(pair);
+    });
+
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "add-owner-btn";
+    addBtn.textContent = "+";
+    addBtn.setAttribute("aria-label", "Add an owner to this stage");
+    // Directory search isn't wired up yet (see project notes on the
+    // Microsoft/Entra integration) — this takes a typed name for now.
+    addBtn.addEventListener("click", () => {
+      const name = window.prompt("Add owner (name):");
+      if (name && name.trim()) {
+        phase.owners.push(name.trim());
+        if (onToggle) onToggle();
+      }
+    });
+    ownerValue.appendChild(addBtn);
+
+    ownerRow.appendChild(ownerValue);
+    detailBlock.appendChild(ownerRow);
+    body.appendChild(detailBlock);
   }
 
   // ---------- init ----------
