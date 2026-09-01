@@ -174,10 +174,11 @@
     const pct = phasePercent(phase);
     const fadeClass = phase.fade ? `fade-${phase.fade}` : "";
     const bleedClass = phase.bleed ? `bleed-${phase.bleed}` : "";
+    const activeClass = status === "active" ? "is-active" : "";
 
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = `stage ${fadeClass} ${bleedClass}`.trim();
+    btn.className = `stage ${fadeClass} ${bleedClass} ${activeClass}`.trim();
     btn.style.gridColumn = `${phase.month} / span ${phase.span}`;
     btn.style.gridRow = `${rowIndex}`;
     const startDate = monthOffsetDate(phase.month);
@@ -302,19 +303,26 @@
     const head = document.createElement(hasDetail ? "summary" : "div");
     head.className = "substep-head";
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.className = "step-checkbox";
-    checkbox.checked = step.status === "done";
-    checkbox.setAttribute("aria-label", `Mark "${step.title}" complete`);
-    // Clicking the checkbox inside a <summary> would otherwise also toggle
-    // the disclosure open/closed — keep the two interactions independent.
-    checkbox.addEventListener("click", (e) => e.stopPropagation());
-    checkbox.addEventListener("change", () => {
-      step.status = checkbox.checked ? "done" : "todo";
+    // Three clickable stages — not started, in progress, complete — cycled
+    // in that order with each click, rather than a plain done/not-done box.
+    const NEXT_STATUS = { todo: "active", active: "done", done: "todo", blocked: "todo" };
+    const check = document.createElement("button");
+    check.type = "button";
+    check.className = `step-check ${step.status}`;
+    const setCheckLabel = () => {
+      check.setAttribute("aria-label", `"${step.title}" — ${STATUS_TEXT[step.status]}. Click to advance.`);
+    };
+    setCheckLabel();
+    // Clicking inside a <summary> would otherwise also toggle the
+    // disclosure open/closed — keep the two interactions independent.
+    check.addEventListener("click", (e) => {
+      e.stopPropagation();
+      step.status = NEXT_STATUS[step.status] || "todo";
+      check.className = `step-check ${step.status}`;
+      setCheckLabel();
       if (onToggle) onToggle();
     });
-    head.appendChild(checkbox);
+    head.appendChild(check);
 
     const title = document.createElement("span");
     title.className = "stitle";
