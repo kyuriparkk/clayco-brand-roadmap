@@ -598,13 +598,6 @@ dialog#drawer::backdrop {
   padding: 18px 24px 26px;
 }
 
-.drawer-objective {
-  font-size: var(--fs-detail);
-  color: var(--ink-2);
-  line-height: 1.55;
-  margin: 0 0 20px;
-}
-
 .drawer-section { margin-bottom: 18px; }
 
 .drawer-section:last-child { margin-bottom: 0; }

@@ -335,11 +335,6 @@
     const body = document.getElementById("drawer-body-content");
     body.innerHTML = "";
 
-    const objective = document.createElement("p");
-    objective.className = "drawer-objective";
-    objective.textContent = phase.blurb;
-    body.appendChild(objective);
-
     const subSection = document.createElement("div");
     subSection.className = "drawer-section";
     subSection.innerHTML = `<h4>Sub-stages <span class="h4-count">${counts.done}/${counts.total}</span></h4>`;
