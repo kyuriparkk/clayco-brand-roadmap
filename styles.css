@@ -826,6 +826,51 @@ details.substep > summary.substep-head::-webkit-details-marker { display: none; 
 
 .add-owner-btn:hover { border-color: var(--red); border-style: solid; color: var(--red-dark); }
 
+.add-owner-wrap { position: relative; display: inline-flex; }
+
+.add-owner-input {
+  width: 170px;
+  font-family: inherit;
+  font-size: 12.5px;
+  padding: 4px 8px;
+  border: 1.5px solid var(--red-outline);
+  border-radius: 4px;
+  outline: none;
+}
+
+.add-owner-input:focus { border-color: var(--red); }
+
+.add-owner-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 5;
+  min-width: 220px;
+  max-height: 180px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 10px 24px rgba(15, 15, 15, 0.16);
+  padding: 4px;
+}
+
+.add-owner-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.add-owner-option:hover { background: var(--surface-2); }
+
 .update-caption {
   font-size: 12.5px;
   color: var(--ink-3);

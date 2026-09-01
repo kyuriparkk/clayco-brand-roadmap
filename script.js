@@ -365,39 +365,93 @@
   }
 
   // Shared "+ add owner" flow for both the phase-level Details row and each
-  // sub-stage: searches Clayco's directory when Microsoft Graph is
-  // configured and signed in, otherwise falls back to typing a name.
-  async function promptAddOwner(getOwnersArray, onToggle) {
-    if (graphConfigured()) {
-      try {
-        const query = window.prompt("Search Clayco directory (name):");
-        if (!query || !query.trim()) return;
-        const results = await searchGraphPeople(query.trim());
-        if (results === null) throw new Error("Graph not available");
-        if (!results.length) {
-          window.alert("No matches found in the directory.");
-          return;
-        }
-        const list = results
-          .map((r, i) => `${i + 1}. ${r.displayName}${r.jobTitle ? " — " + r.jobTitle : ""}`)
-          .join("\n");
-        const choice = window.prompt(`Select a person:\n${list}`, "1");
-        const idx = parseInt(choice, 10) - 1;
-        if (results[idx]) {
-          getOwnersArray().push(results[idx].displayName);
-          if (onToggle) onToggle();
-        }
-        return;
-      } catch (err) {
-        console.error("Microsoft Graph search failed, falling back to manual entry:", err);
-        window.alert("Couldn't reach the Clayco directory — add the name manually instead.");
-      }
+  // sub-stage. Swaps the "+" button for a real inline text field — no native
+  // prompt()/alert() dialogs, which some embedded browser contexts block
+  // silently. Typing a name and pressing Enter adds it directly. When
+  // Microsoft Graph is configured and signed in, matching directory results
+  // appear in a dropdown to pick from instead.
+  function startAddOwner(btn, getOwnersArray, onToggle) {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "add-owner-input";
+    input.placeholder = graphConfigured() ? "Search directory…" : "Employee name…";
+    input.autocomplete = "off";
+
+    const wrap = document.createElement("span");
+    wrap.className = "add-owner-wrap";
+    wrap.appendChild(input);
+
+    const menu = document.createElement("div");
+    menu.className = "add-owner-menu";
+    menu.hidden = true;
+    wrap.appendChild(menu);
+
+    btn.replaceWith(wrap);
+    input.focus();
+
+    let cancelled = false;
+    function restoreButton() {
+      if (cancelled) return;
+      cancelled = true;
+      wrap.replaceWith(btn);
     }
-    const name = window.prompt("Add owner (name):");
-    if (name && name.trim()) {
-      getOwnersArray().push(name.trim());
+
+    function addName(name) {
+      const trimmed = name.trim();
+      if (!trimmed) return restoreButton();
+      getOwnersArray().push(trimmed);
+      cancelled = true; // the whole drawer re-renders via onToggle
       if (onToggle) onToggle();
     }
+
+    let searchToken = 0;
+    async function runSearch(query) {
+      const myToken = ++searchToken;
+      try {
+        const results = await searchGraphPeople(query);
+        if (myToken !== searchToken || !results) return;
+        menu.innerHTML = "";
+        if (!results.length) {
+          menu.hidden = true;
+          return;
+        }
+        results.forEach((r) => {
+          const item = document.createElement("button");
+          item.type = "button";
+          item.className = "add-owner-option";
+          item.textContent = r.jobTitle ? `${r.displayName} — ${r.jobTitle}` : r.displayName;
+          item.addEventListener("mousedown", (e) => {
+            e.preventDefault(); // keep focus so the blur handler doesn't fire first
+            addName(r.displayName);
+          });
+          menu.appendChild(item);
+        });
+        menu.hidden = false;
+      } catch (err) {
+        console.error("Microsoft Graph search failed:", err);
+        menu.hidden = true;
+      }
+    }
+
+    if (graphConfigured()) {
+      input.addEventListener("input", () => {
+        const q = input.value.trim();
+        if (q.length < 2) {
+          menu.hidden = true;
+          return;
+        }
+        runSearch(q);
+      });
+    }
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") restoreButton();
+      if (e.key === "Enter") addName(input.value);
+    });
+    input.addEventListener("blur", () => {
+      // Let an option's mousedown register first if that's what caused the blur.
+      setTimeout(restoreButton, 150);
+    });
   }
 
   // ---------- drawer ----------
@@ -507,10 +561,14 @@
     addBtn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      promptAddOwner(() => {
-        if (!step.owners) step.owners = [...owners];
-        return step.owners;
-      }, onToggle);
+      startAddOwner(
+        addBtn,
+        () => {
+          if (!step.owners) step.owners = [...owners];
+          return step.owners;
+        },
+        onToggle
+      );
     });
     ownerRow.appendChild(addBtn);
     body.appendChild(ownerRow);
@@ -606,7 +664,7 @@
     addBtn.className = "add-owner-btn";
     addBtn.textContent = "+";
     addBtn.setAttribute("aria-label", "Add an owner to this stage");
-    addBtn.addEventListener("click", () => promptAddOwner(() => phase.owners, onToggle));
+    addBtn.addEventListener("click", () => startAddOwner(addBtn, () => phase.owners, onToggle));
     ownerValue.appendChild(addBtn);
 
     ownerRow.appendChild(ownerValue);
