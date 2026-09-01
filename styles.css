@@ -595,6 +595,32 @@ dialog#drawer::backdrop {
   white-space: nowrap;
 }
 
+.owner-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  flex: none;
+}
+
+/* Stands in for a real profile photo until assignments are finalized. */
+.owner-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
 .drawer-body {
   flex: 1 1 auto;
   overflow-y: auto;
@@ -653,6 +679,26 @@ dialog#drawer::backdrop {
   font-weight: 900;
   color: #fff;
 }
+
+.substep-reorder {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  margin-left: 10px;
+}
+
+.reorder-btn {
+  border: none;
+  background: none;
+  padding: 1px 4px;
+  font-size: 8px;
+  line-height: 1;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+
+.reorder-btn:hover:not(:disabled) { color: var(--red-dark); }
+.reorder-btn:disabled { color: var(--line-strong); cursor: default; }
 
 .substeps {
   list-style: none;

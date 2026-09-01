@@ -51,6 +51,17 @@
     return start === end ? start : `${start} – ${end}`;
   }
 
+  // Placeholder for a real profile photo — initials in an avatar circle.
+  function initials(name) {
+    return name
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  }
+
   // ---------- derived data ----------
 
   function phaseStatus(phase) {
@@ -266,7 +277,7 @@
 
   // ---------- drawer ----------
 
-  function buildSubstep(step, currentStep, onToggle) {
+  function buildSubstep(step, currentStep, onToggle, reorderCtx) {
     const hasDetail = step.detail && step.detail.length;
     const row = document.createElement(hasDetail ? "details" : "div");
     row.className = `substep${step === currentStep ? " is-current" : ""}`;
@@ -291,6 +302,45 @@
     title.className = "stitle";
     title.textContent = step.title;
     head.appendChild(title);
+
+    if (reorderCtx) {
+      const { array, index } = reorderCtx;
+      const reorder = document.createElement("span");
+      reorder.className = "substep-reorder";
+
+      const move = (delta) => {
+        const j = index + delta;
+        if (j < 0 || j >= array.length) return;
+        [array[index], array[j]] = [array[j], array[index]];
+        if (onToggle) onToggle();
+      };
+
+      const upBtn = document.createElement("button");
+      upBtn.type = "button";
+      upBtn.className = "reorder-btn";
+      upBtn.innerHTML = "&#9650;";
+      upBtn.disabled = index === 0;
+      upBtn.setAttribute("aria-label", `Move "${step.title}" up`);
+      upBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        move(-1);
+      });
+
+      const downBtn = document.createElement("button");
+      downBtn.type = "button";
+      downBtn.className = "reorder-btn";
+      downBtn.innerHTML = "&#9660;";
+      downBtn.disabled = index === array.length - 1;
+      downBtn.setAttribute("aria-label", `Move "${step.title}" down`);
+      downBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        move(1);
+      });
+
+      reorder.appendChild(upBtn);
+      reorder.appendChild(downBtn);
+      head.appendChild(reorder);
+    }
 
     row.appendChild(head);
     if (hasDetail) {
@@ -324,18 +374,20 @@
     const header = document.getElementById("drawer-header-content");
     const startDate = isOngoing ? null : monthOffsetDate(phase.month);
     const endDate = isOngoing ? null : addDays(monthOffsetDate(phase.month + phase.span), -1);
-    const metaLine = [
-      phase.owner,
-      isOngoing ? "Ongoing" : dateRangeLabel(startDate, endDate),
-    ]
-      .filter(Boolean)
-      .join(" · ");
+    const dateText = isOngoing ? "Ongoing" : dateRangeLabel(startDate, endDate);
 
     header.innerHTML = `
       <h3 id="drawer-title">${phase.title}</h3>
       <div class="drawer-subline">
         <span class="pill status-${status}">${STATUS_TEXT[status]}</span>
-        <span class="drawer-meta-text">${metaLine}</span>
+        ${
+          phase.owner
+            ? `<span class="owner-chip"><span class="owner-avatar" aria-hidden="true">${initials(
+                phase.owner
+              )}</span>${phase.owner}</span>`
+            : ""
+        }
+        <span class="drawer-meta-text">${dateText}</span>
       </div>
     `;
 
@@ -347,7 +399,16 @@
     subSection.innerHTML = `<h4>Sub-stages <span class="h4-count">${counts.done}/${counts.total}</span></h4>`;
     const stepsList = document.createElement("div");
     stepsList.className = "substeps";
-    displaySteps.forEach((s) => stepsList.appendChild(buildSubstep(s, current, onToggle)));
+    displaySteps.forEach((s, i) => {
+      // Reordering always operates on the real source array — for Launch,
+      // items past its own steps belong to Governance's own (single-item)
+      // list rather than Launch's.
+      const reorderCtx =
+        phase.id === "launch" && i >= phase.steps.length
+          ? { array: ROADMAP.ongoing.steps, index: i - phase.steps.length }
+          : { array: phase.steps, index: i };
+      stepsList.appendChild(buildSubstep(s, current, onToggle, reorderCtx));
+    });
     subSection.appendChild(stepsList);
     body.appendChild(subSection);
 
