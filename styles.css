@@ -481,8 +481,9 @@ dialog#drawer {
   margin: 0;
   width: min(880px, 94vw);
   max-width: 94vw;
-  height: auto;
-  max-height: 92vh;
+  height: min(640px, 92vh);
+  min-height: min(640px, 92vh);
+  max-height: min(640px, 92vh);
   border: none;
   border-radius: 6px;
   padding: 0;
@@ -514,6 +515,7 @@ dialog#drawer::backdrop {
 
 .drawer-inner {
   height: 100%;
+  min-height: 100%;
   max-height: 92vh;
   display: flex;
   flex-direction: column;
@@ -625,12 +627,6 @@ dialog#drawer::backdrop {
   margin: 0 0 8px;
 }
 
-.h4-count {
-  font-weight: 700;
-  color: var(--red-dark);
-  text-transform: none;
-  letter-spacing: normal;
-}
 
 /* Three click-to-cycle stages: not started (empty ring) → in progress
    (ring + center dot) → complete (filled with a check). */
@@ -706,20 +702,12 @@ dialog#drawer::backdrop {
 
 .substage-nav {
   border-right: 1px solid var(--line);
-  padding: 18px 16px 18px 24px;
+  padding: 8px 16px 18px 24px;
   align-self: start;
   position: sticky;
   top: 0;
 }
 
-.substage-nav h4 {
-  font-size: var(--fs-meta);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--ink-3);
-  margin: 0 0 10px;
-}
 
 .substage-nav-list {
   display: grid;
@@ -737,7 +725,7 @@ dialog#drawer::backdrop {
   width: 100%;
   text-align: left;
   background: none;
-  border: 1.5px solid transparent;
+  border: none;
   border-radius: 0;
   padding: 8px 10px;
   font-family: inherit;
@@ -746,10 +734,7 @@ dialog#drawer::backdrop {
 
 .substage-nav-row:hover { background: var(--surface-2); }
 
-.substage-nav-row.is-selected {
-  border-color: var(--red);
-  background: var(--red-soft);
-}
+.substage-nav-row.is-selected { background: var(--red-soft); }
 
 .substage-nav-row { cursor: grab; }
 .substage-nav-row.dragging { opacity: 0.4; }
@@ -770,7 +755,7 @@ dialog#drawer::backdrop {
 
 
 .substage-detail {
-  padding: 18px 24px;
+  padding: 8px 24px 18px;
   min-width: 0;
 }
 

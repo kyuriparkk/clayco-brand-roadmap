@@ -630,10 +630,6 @@
     // Reference the real step objects (not copies) so checking them off here
     // persists correctly.
     const displaySteps = phase.id === "launch" ? [...phase.steps, ...ROADMAP.ongoing.steps] : phase.steps;
-    const counts = {
-      done: displaySteps.filter((s) => s.status === "done").length,
-      total: displaySteps.length,
-    };
 
     const header = document.getElementById("drawer-header-content");
     const startDate = isOngoing ? null : monthOffsetDate(phase.month);
@@ -665,7 +661,6 @@
 
     const nav = document.createElement("div");
     nav.className = "substage-nav";
-    nav.innerHTML = `<h4>Sub-stages <span class="h4-count">${counts.done}/${counts.total}</span></h4>`;
     const navList = document.createElement("div");
     navList.className = "substage-nav-list";
     displaySteps.forEach((s, i) => {
@@ -766,11 +761,13 @@
     dialog.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeDrawer();
     });
+    // A click lands on the <dialog> element itself only when it hits the
+    // backdrop (clicks on any real content inside target a descendant) —
+    // more reliable than comparing click coordinates against the dialog's
+    // rect, which misjudges synthetic clicks dispatched without real
+    // coordinates as "outside click, close me."
     dialog.addEventListener("click", (e) => {
-      const rect = dialog.getBoundingClientRect();
-      const inside =
-        e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
-      if (!inside) closeDrawer();
+      if (e.target === dialog) closeDrawer();
     });
 
     rebuildChart();
