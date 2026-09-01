@@ -332,16 +332,21 @@
     title.textContent = step.title;
     head.appendChild(title);
 
-    // Per-sub-stage assignee — falls back to the phase's owner until
-    // individual assignments are decided. Just the avatar shows in the
-    // collapsed row; the name only appears once expanded.
-    const owner = step.owner || ownerFallback;
-    if (owner) {
-      const avatar = document.createElement("span");
-      avatar.className = "owner-avatar substep-owner-avatar";
-      avatar.textContent = initials(owner);
-      avatar.setAttribute("aria-label", `Assigned to ${owner}`);
-      head.appendChild(avatar);
+    // Per-sub-stage assignees — falls back to the phase's owners until
+    // individual assignments are decided. Just the avatars show in the
+    // collapsed row (stacked); names only appear once expanded.
+    const owners = step.owners || ownerFallback || [];
+    if (owners.length) {
+      const stack = document.createElement("span");
+      stack.className = "substep-owner-stack";
+      owners.forEach((name) => {
+        const avatar = document.createElement("span");
+        avatar.className = "owner-avatar substep-owner-avatar";
+        avatar.textContent = initials(name);
+        avatar.setAttribute("aria-label", `Assigned to ${name}`);
+        stack.appendChild(avatar);
+      });
+      head.appendChild(stack);
     }
 
     if (reorderCtx) {
@@ -381,12 +386,12 @@
     if (hasDetail) {
       const body = document.createElement("div");
       body.className = "sdetail-body";
-      if (owner) {
+      owners.forEach((name) => {
         const ownerLine = document.createElement("div");
         ownerLine.className = "substep-owner-full";
-        ownerLine.innerHTML = `<span class="owner-avatar" aria-hidden="true">${initials(owner)}</span>${owner}`;
+        ownerLine.innerHTML = `<span class="owner-avatar" aria-hidden="true">${initials(name)}</span>${name}`;
         body.appendChild(ownerLine);
-      }
+      });
       const ul = document.createElement("ul");
       ul.className = "sdetail";
       step.detail.forEach((d) => {
@@ -444,15 +449,18 @@
       const reorderCtx = fromGovernance
         ? { array: ROADMAP.ongoing.steps, index: i - phase.steps.length }
         : { array: phase.steps, index: i };
-      const ownerFallback = fromGovernance ? ROADMAP.ongoing.owner : phase.owner;
+      const ownerFallback = fromGovernance ? ROADMAP.ongoing.owners : phase.owners;
       stepsList.appendChild(buildSubstep(s, current, onToggle, reorderCtx, ownerFallback));
     });
     subSection.appendChild(stepsList);
     body.appendChild(subSection);
 
     const rows = [];
-    if (phase.owner) {
-      rows.push(["Owner", `<span class="owner-avatar" aria-hidden="true">${initials(phase.owner)}</span>${phase.owner}`]);
+    if (phase.owners && phase.owners.length) {
+      const ownerValue = phase.owners
+        .map((name) => `<span class="owner-pair"><span class="owner-avatar" aria-hidden="true">${initials(name)}</span>${name}</span>`)
+        .join("");
+      rows.push(["Owner", ownerValue]);
     }
 
     if (rows.length) {
