@@ -744,11 +744,7 @@ dialog#drawer::backdrop {
   color: var(--ink);
 }
 
-.detail-col-single {
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid var(--line);
-}
+.detail-col-single { margin-top: 40px; }
 
 .detail-field { margin-bottom: 40px; }
 .detail-field:last-child { margin-bottom: 0; }
@@ -759,7 +755,9 @@ dialog#drawer::backdrop {
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: var(--ink-3);
-  margin: 0 0 6px;
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
 }
 
 .detail-field p {
