@@ -16,8 +16,19 @@
     return d;
   }
 
+  // Walks real calendar months from projectStart (month 1 = projectStart's
+  // month) rather than fixed 30-day blocks, so "month 10" lands on the
+  // correct real month regardless of how long the months in between are.
+  // monthNumber may be fractional (e.g. 2.6) for the current-position marker.
   function monthOffsetDate(monthNumber) {
-    return addDays(parseISO(ROADMAP.projectStart), (monthNumber - 1) * 30);
+    const start = parseISO(ROADMAP.projectStart);
+    const whole = Math.floor(monthNumber - 1);
+    const frac = monthNumber - 1 - whole;
+    const base = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + whole, start.getUTCDate()));
+    if (frac === 0) return base;
+    const next = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + whole + 1, start.getUTCDate()));
+    const daysInSpan = Math.round((next.getTime() - base.getTime()) / 86400000);
+    return addDays(base, frac * daysInSpan);
   }
 
   const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -142,7 +153,7 @@
     for (let m = 1; m <= months; m++) {
       const num = document.createElement("div");
       num.className = "num";
-      num.textContent = m;
+      num.textContent = MONTHS_SHORT[monthOffsetDate(m).getUTCMonth()];
       ruler.appendChild(num);
     }
     return ruler;

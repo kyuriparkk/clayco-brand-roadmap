@@ -22,7 +22,9 @@
 
 const ROADMAP = {
   months: 10,
-  projectStart: "2026-07-14",
+  // Month 1 of the axis = September; month 10 = June (see script.js
+  // monthOffsetDate, which walks real calendar months from this date).
+  projectStart: "2026-09-01",
   // Where the current-position marker sits on the 1–10 month axis.
   // Currently: wrapping up Research, starting Brand Strategy.
   progressMonth: 2.6,
@@ -92,7 +94,7 @@ const ROADMAP = {
     {
       id: "brand-strategy",
       month: 2,
-      span: 2,
+      span: 3,
       title: "Brand Strategy",
       blurb: "Foundation, positioning, architecture, and language/naming.",
       owner: "Strategy & Insights Team",
@@ -140,7 +142,7 @@ const ROADMAP = {
     {
       id: "design-system",
       month: 3,
-      span: 4,
+      span: 5,
       fade: "out",
       title: "Design System",
       blurb: "Creative direction, logo, type, color, imagery, and the graphic + digital systems.",
@@ -207,8 +209,8 @@ const ROADMAP = {
     },
     {
       id: "website",
-      month: 5,
-      span: 2,
+      month: 4,
+      span: 5,
       fade: "out",
       title: "Website",
       blurb: "Research, requirements, architecture, prototypes, content, and launch prep.",
@@ -229,7 +231,7 @@ const ROADMAP = {
     {
       id: "brand-guidelines",
       month: 6,
-      span: 2,
+      span: 3,
       title: "Brand Guidelines",
       blurb: "Codify the full system, plus templates and tools for every application.",
       owner: "Brand Team",
@@ -262,7 +264,7 @@ const ROADMAP = {
     {
       id: "implementation",
       month: 8,
-      span: 1,
+      span: 2,
       title: "Implementation & Migration",
       blurb: "Roll the new system out across the org.",
       owner: "Program Management",
@@ -275,7 +277,7 @@ const ROADMAP = {
     {
       id: "launch",
       month: 9,
-      span: 1,
+      span: 2,
       fade: "out",
       title: "Launch",
       blurb: "Train, launch internally, launch externally, then iterate on feedback.",
