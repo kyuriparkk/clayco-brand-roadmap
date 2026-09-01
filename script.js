@@ -121,14 +121,6 @@
     return ROADMAP.phases.find((p) => p.id === id);
   }
 
-  function dependsOnTitles(phase) {
-    if (!phase.dependsOn || !phase.dependsOn.length) return [];
-    return phase.dependsOn.map((id) => {
-      const p = phaseById(id);
-      return p ? p.title : id;
-    });
-  }
-
   // ---------- status strip ----------
 
   function renderStatusStrip() {
@@ -451,10 +443,6 @@
     if (phase.owner) {
       rows.push(["Owner", `<span class="owner-avatar" aria-hidden="true">${initials(phase.owner)}</span>${phase.owner}`]);
     }
-    if (phase.approvalGate) rows.push(["Approval gate", phase.approvalGate]);
-    const deps = dependsOnTitles(phase);
-    if (deps.length) rows.push(["Depends on", deps.join(", ")]);
-    if (phase.risks && phase.risks.length) rows.push(["Risk", phase.risks.join(" ")]);
 
     if (rows.length) {
       const detailBlock = document.createElement("div");
