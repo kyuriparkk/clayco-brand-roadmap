@@ -570,11 +570,6 @@
   function buildDetailPanel(container, { step, phase, isCurrent, ownerFallback, onToggle }) {
     container.innerHTML = "";
 
-    const eyebrow = document.createElement("div");
-    eyebrow.className = "detail-eyebrow";
-    eyebrow.textContent = "Selected sub-stage";
-    container.appendChild(eyebrow);
-
     const h3 = document.createElement("h3");
     h3.className = "detail-title";
     h3.textContent = step.title;

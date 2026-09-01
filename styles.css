@@ -774,15 +774,6 @@ dialog#drawer::backdrop {
   min-width: 0;
 }
 
-.detail-eyebrow {
-  font-size: var(--fs-meta);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--ink-3);
-  margin-bottom: 6px;
-}
-
 .detail-title {
   font-size: 22px;
   font-weight: 800;
