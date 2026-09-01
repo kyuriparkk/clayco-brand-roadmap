@@ -42,6 +42,19 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Center the whole layout in the viewport instead of leaving it pinned to
+   the top with dead space below — any slack becomes even breathing room
+   above and below rather than an empty gap at the bottom. Mobile keeps
+   normal top-down document flow since its content can run long. */
+@media (min-width: 641px) {
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
 a { color: inherit; }
 
 button { font-family: inherit; }
@@ -69,7 +82,7 @@ button { font-family: inherit; }
 /* ---------- Header ---------- */
 
 header.site {
-  padding: 14px 0 8px;
+  padding: 28px 0 14px;
   border-bottom: 1px solid var(--line);
   flex: none;
 }
@@ -119,7 +132,7 @@ header.site p.sub {
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   margin: 0;
-  padding: 8px 0;
+  padding: 16px 0;
 }
 
 .status-item {
@@ -173,7 +186,7 @@ header.site p.sub {
 /* ---------- Timeline section ---------- */
 
 section.timeline-section {
-  padding: 24px 0 6px;
+  padding: 40px 0 10px;
 }
 
 /* Desktop/tablet chart */
@@ -259,7 +272,7 @@ section.timeline-section {
   z-index: 2;
   display: grid;
   grid-template-columns: repeat(10, 1fr);
-  row-gap: 20px;
+  row-gap: 30px;
   column-gap: 0;
 }
 
