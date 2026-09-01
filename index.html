@@ -65,6 +65,9 @@
     </div>
   </dialog>
 
+  <!-- MSAL.js — only used if MS_GRAPH_CONFIG (roadmap-data.js) has a real
+       clientId/tenantId; the app works fine without it. -->
+  <script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
   <script src="roadmap-data.js"></script>
   <script src="script.js"></script>
 </body>

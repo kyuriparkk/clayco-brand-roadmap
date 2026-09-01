@@ -608,27 +608,32 @@ dialog#drawer::backdrop {
 
 .substep-owner-stack {
   display: flex;
+  align-items: center;
+  gap: 6px;
   margin-left: auto;
   flex: none;
 }
 
 .substep-owner-avatar {
-  width: 18px;
-  height: 18px;
-  font-size: 8px;
-  border: 1.5px solid var(--surface);
+  width: 24px;
+  height: 24px;
+  font-size: 10px;
 }
 
-.substep-owner-stack .owner-avatar + .owner-avatar { margin-left: -6px; }
+.substep-owner-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0 0 10px 24px;
+}
 
 .substep-owner-full {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 7px;
   font-size: 12.5px;
   font-weight: 600;
   color: var(--ink-2);
-  margin: 0 0 10px 24px;
 }
 
 .drawer-body {

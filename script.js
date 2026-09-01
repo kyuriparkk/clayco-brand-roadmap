@@ -297,13 +297,117 @@
     root.appendChild(list);
   }
 
+  // ---------- Microsoft Graph people search (optional) ----------
+
+  let msalApp = null;
+  let msalAccount = null;
+
+  function graphConfigured() {
+    return Boolean(
+      typeof MS_GRAPH_CONFIG !== "undefined" && MS_GRAPH_CONFIG.clientId && MS_GRAPH_CONFIG.tenantId
+    );
+  }
+
+  function getMsalApp() {
+    if (!graphConfigured() || typeof msal === "undefined") return null;
+    if (!msalApp) {
+      msalApp = new msal.PublicClientApplication({
+        auth: {
+          clientId: MS_GRAPH_CONFIG.clientId,
+          authority: `https://login.microsoftonline.com/${MS_GRAPH_CONFIG.tenantId}`,
+          redirectUri: window.location.origin + window.location.pathname,
+        },
+        cache: { cacheLocation: "sessionStorage" },
+      });
+    }
+    return msalApp;
+  }
+
+  async function ensureSignedIn(app) {
+    const existing = app.getAllAccounts();
+    if (existing.length) {
+      msalAccount = existing[0];
+      return msalAccount;
+    }
+    const result = await app.loginPopup({ scopes: MS_GRAPH_CONFIG.scopes });
+    msalAccount = result.account;
+    return msalAccount;
+  }
+
+  async function getGraphToken(app) {
+    const account = msalAccount || app.getAllAccounts()[0];
+    try {
+      const result = await app.acquireTokenSilent({ scopes: MS_GRAPH_CONFIG.scopes, account });
+      return result.accessToken;
+    } catch (silentErr) {
+      const result = await app.acquireTokenPopup({ scopes: MS_GRAPH_CONFIG.scopes });
+      msalAccount = result.account;
+      return result.accessToken;
+    }
+  }
+
+  // Searches the org's real directory via Microsoft Graph
+  // (GET /users?$search=...) — requires MS_GRAPH_CONFIG to be filled in.
+  async function searchGraphPeople(query) {
+    const app = getMsalApp();
+    if (!app) return null; // not configured — caller should fall back
+    await ensureSignedIn(app);
+    const token = await getGraphToken(app);
+    const url =
+      `https://graph.microsoft.com/v1.0/users?$search="displayName:${encodeURIComponent(query)}"` +
+      `&$select=displayName,mail,jobTitle&$top=8`;
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}`, ConsistencyLevel: "eventual" },
+    });
+    if (!res.ok) throw new Error(`Graph search failed (${res.status})`);
+    const data = await res.json();
+    return data.value || [];
+  }
+
+  // Shared "+ add owner" flow for both the phase-level Details row and each
+  // sub-stage: searches Clayco's directory when Microsoft Graph is
+  // configured and signed in, otherwise falls back to typing a name.
+  async function promptAddOwner(getOwnersArray, onToggle) {
+    if (graphConfigured()) {
+      try {
+        const query = window.prompt("Search Clayco directory (name):");
+        if (!query || !query.trim()) return;
+        const results = await searchGraphPeople(query.trim());
+        if (results === null) throw new Error("Graph not available");
+        if (!results.length) {
+          window.alert("No matches found in the directory.");
+          return;
+        }
+        const list = results
+          .map((r, i) => `${i + 1}. ${r.displayName}${r.jobTitle ? " — " + r.jobTitle : ""}`)
+          .join("\n");
+        const choice = window.prompt(`Select a person:\n${list}`, "1");
+        const idx = parseInt(choice, 10) - 1;
+        if (results[idx]) {
+          getOwnersArray().push(results[idx].displayName);
+          if (onToggle) onToggle();
+        }
+        return;
+      } catch (err) {
+        console.error("Microsoft Graph search failed, falling back to manual entry:", err);
+        window.alert("Couldn't reach the Clayco directory — add the name manually instead.");
+      }
+    }
+    const name = window.prompt("Add owner (name):");
+    if (name && name.trim()) {
+      getOwnersArray().push(name.trim());
+      if (onToggle) onToggle();
+    }
+  }
+
   // ---------- drawer ----------
 
   function buildSubstep(step, currentStep, onToggle, reorderCtx, ownerFallback) {
-    const hasDetail = step.detail && step.detail.length;
-    const row = document.createElement(hasDetail ? "details" : "div");
+    // Always expandable — even sub-stages with no detail bullets still need
+    // somewhere to show/add their owners.
+    const row = document.createElement("details");
     row.className = `substep${step === currentStep ? " is-current" : ""}`;
-    const head = document.createElement(hasDetail ? "summary" : "div");
+    const head = document.createElement("summary");
     head.className = "substep-head";
 
     // Three clickable stages — not started, in progress, complete — cycled
@@ -383,15 +487,35 @@
     }
 
     row.appendChild(head);
-    if (hasDetail) {
-      const body = document.createElement("div");
-      body.className = "sdetail-body";
-      owners.forEach((name) => {
-        const ownerLine = document.createElement("div");
-        ownerLine.className = "substep-owner-full";
-        ownerLine.innerHTML = `<span class="owner-avatar" aria-hidden="true">${initials(name)}</span>${name}`;
-        body.appendChild(ownerLine);
-      });
+
+    const body = document.createElement("div");
+    body.className = "sdetail-body";
+
+    const ownerRow = document.createElement("div");
+    ownerRow.className = "substep-owner-row";
+    owners.forEach((name) => {
+      const ownerLine = document.createElement("span");
+      ownerLine.className = "substep-owner-full";
+      ownerLine.innerHTML = `<span class="owner-avatar" aria-hidden="true">${initials(name)}</span>${name}`;
+      ownerRow.appendChild(ownerLine);
+    });
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "add-owner-btn";
+    addBtn.textContent = "+";
+    addBtn.setAttribute("aria-label", `Add an owner to "${step.title}"`);
+    addBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      promptAddOwner(() => {
+        if (!step.owners) step.owners = [...owners];
+        return step.owners;
+      }, onToggle);
+    });
+    ownerRow.appendChild(addBtn);
+    body.appendChild(ownerRow);
+
+    if (step.detail && step.detail.length) {
       const ul = document.createElement("ul");
       ul.className = "sdetail";
       step.detail.forEach((d) => {
@@ -400,8 +524,8 @@
         ul.appendChild(li);
       });
       body.appendChild(ul);
-      row.appendChild(body);
     }
+    row.appendChild(body);
     return row;
   }
 
@@ -482,15 +606,7 @@
     addBtn.className = "add-owner-btn";
     addBtn.textContent = "+";
     addBtn.setAttribute("aria-label", "Add an owner to this stage");
-    // Directory search isn't wired up yet (see project notes on the
-    // Microsoft/Entra integration) — this takes a typed name for now.
-    addBtn.addEventListener("click", () => {
-      const name = window.prompt("Add owner (name):");
-      if (name && name.trim()) {
-        phase.owners.push(name.trim());
-        if (onToggle) onToggle();
-      }
-    });
+    addBtn.addEventListener("click", () => promptAddOwner(() => phase.owners, onToggle));
     ownerValue.appendChild(addBtn);
 
     ownerRow.appendChild(ownerValue);

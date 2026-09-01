@@ -20,6 +20,28 @@
  * from it plus `progressMonth`.
  */
 
+/**
+ * Microsoft Graph / Entra ID (Azure AD) config for the "+ add owner" people
+ * search. To turn on real Clayco directory search:
+ *
+ *   1. In Azure Portal → Microsoft Entra ID → App registrations, register a
+ *      new "Single-page application" (SPA).
+ *   2. Add this page's URL as a redirect URI (SPA platform), e.g.
+ *      https://<your-domain>/index.html
+ *   3. Under API permissions, add Microsoft Graph delegated permission
+ *      "User.ReadBasic.All" (no admin consent is typically required for
+ *      this one, but check with your Entra admin).
+ *   4. Copy the "Application (client) ID" and "Directory (tenant) ID" from
+ *      the app registration's Overview page into clientId / tenantId below.
+ *
+ * Until both are filled in, "+ add owner" falls back to typing a name.
+ */
+const MS_GRAPH_CONFIG = {
+  clientId: "",
+  tenantId: "",
+  scopes: ["User.ReadBasic.All"],
+};
+
 const ROADMAP = {
   months: 10,
   // Month 1 of the axis = September; month 10 = June (see script.js
