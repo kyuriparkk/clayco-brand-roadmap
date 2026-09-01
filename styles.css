@@ -723,7 +723,11 @@ dialog#drawer::backdrop {
 
 .substage-nav-list {
   display: grid;
-  gap: 6px;
+  gap: 4px;
+}
+
+.substage-nav-row:not(:last-child) {
+  box-shadow: 0 1px 0 0 var(--line-strong);
 }
 
 .substage-nav-row {
@@ -786,14 +790,9 @@ dialog#drawer::backdrop {
   color: var(--ink);
 }
 
-.detail-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px 32px;
-  margin-top: 18px;
-}
+.detail-col-single { margin-top: 28px; }
 
-.detail-field { margin-bottom: 18px; }
+.detail-field { margin-bottom: 32px; }
 .detail-field:last-child { margin-bottom: 0; }
 
 .detail-field h4 {
@@ -827,7 +826,6 @@ dialog#drawer::backdrop {
 @media (max-width: 640px) {
   .drawer-columns { grid-template-columns: 1fr; margin: -18px -20px; }
   .substage-nav { border-right: none; border-bottom: 1px solid var(--line); position: static; }
-  .detail-grid { grid-template-columns: 1fr; }
 }
 
 .owner-pair { display: inline-flex; align-items: center; gap: 6px; }

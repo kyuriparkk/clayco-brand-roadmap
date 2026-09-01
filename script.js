@@ -382,7 +382,7 @@
     const input = document.createElement("input");
     input.type = "text";
     input.className = "add-owner-input";
-    input.placeholder = graphConfigured() ? "Search directory…" : "Employee name…";
+    input.placeholder = graphConfigured() ? "Search directory…" : "Type a name…";
     input.autocomplete = "off";
 
     const wrap = document.createElement("span");
@@ -585,33 +585,8 @@
     subline.innerHTML = `<span class="pill status-${step.status}">${STATUS_TEXT[step.status]}</span>`;
     container.appendChild(subline);
 
-    const grid = document.createElement("div");
-    grid.className = "detail-grid";
-
-    const leftCol = document.createElement("div");
-    leftCol.className = "detail-col";
-    const objective = document.createElement("div");
-    objective.className = "detail-field";
-    objective.innerHTML = `<h4>Objective</h4><p>${phase.blurb}</p>`;
-    leftCol.appendChild(objective);
-
-    if (step.detail && step.detail.length) {
-      const deliverables = document.createElement("div");
-      deliverables.className = "detail-field";
-      deliverables.innerHTML = "<h4>Deliverables</h4>";
-      const ul = document.createElement("ul");
-      ul.className = "sdetail";
-      step.detail.forEach((d) => {
-        const li = document.createElement("li");
-        li.textContent = d;
-        ul.appendChild(li);
-      });
-      deliverables.appendChild(ul);
-      leftCol.appendChild(deliverables);
-    }
-
-    const rightCol = document.createElement("div");
-    rightCol.className = "detail-col";
+    const col = document.createElement("div");
+    col.className = "detail-col detail-col-single";
 
     const ownersToShow = step.owners || ownerFallback || [];
     const ownerField = document.createElement("div");
@@ -627,11 +602,14 @@
         onToggle
       )
     );
-    rightCol.appendChild(ownerField);
+    col.appendChild(ownerField);
 
-    grid.appendChild(leftCol);
-    grid.appendChild(rightCol);
-    container.appendChild(grid);
+    const objective = document.createElement("div");
+    objective.className = "detail-field";
+    objective.innerHTML = `<h4>Objective</h4><p>${phase.blurb}</p>`;
+    col.appendChild(objective);
+
+    container.appendChild(col);
   }
 
   function renderDrawer(phase, isOngoing, onToggle) {
