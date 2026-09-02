@@ -886,7 +886,7 @@ dialog#drawer::backdrop {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 1.5px solid transparent;
+  border: none;
   background: none;
   color: var(--red);
   cursor: pointer;
@@ -906,30 +906,34 @@ dialog#drawer::backdrop {
   fill: none;
 }
 
-.add-owner-btn:hover { border-color: var(--red-dark); color: var(--red-dark); }
+.add-owner-btn:hover { background: var(--red-soft); }
 
-/* While typing, the button becomes a "confirm" action: muted/transparent
-   until something is typed, then a solid red filled circle. */
+/* While typing, the button becomes a "confirm" action: filled gray
+   until something is typed, then a solid red filled circle — no
+   borders, just background fills. */
 .add-owner-btn.is-confirm {
+  background: var(--surface-3);
   color: var(--ink-3);
-  border-color: transparent;
-  background: none;
+}
+
+.add-owner-btn.is-confirm svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2px;
 }
 
 .add-owner-btn.is-confirm:hover:not(.has-value) {
+  background: var(--line-strong);
   color: var(--ink-2);
-  border-color: var(--line-strong);
 }
 
 .add-owner-btn.is-confirm.has-value {
-  color: #fff;
   background: var(--red);
-  border-color: var(--red);
+  color: #fff;
 }
 
 .add-owner-btn.is-confirm.has-value:hover {
   background: var(--red-dark);
-  border-color: var(--red-dark);
 }
 
 .add-owner-trailing {
