@@ -2,6 +2,8 @@
   const STEP_WEIGHT = { done: 1, active: 0.5, blocked: 0.25, todo: 0 };
   const STATUS_ICON = { done: "✓", active: "•", blocked: "!", todo: "" };
   const STATUS_TEXT = { done: "Complete", active: "In progress", blocked: "Blocked", todo: "Not started" };
+  const PLUS_SVG = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" /></svg>';
+  const CHECK_SVG = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" /></svg>';
 
   // ---------- date helpers ----------
 
@@ -45,7 +47,7 @@
   // other date in this app is a synthetic UTC-anchored project date).
   function formatToday() {
     const d = new Date();
-    return `${MONTHS_SHORT[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+    return `${MONTHS_SHORT[d.getMonth()]} ${d.getDate()}`;
   }
 
   function formatDateStr(iso) {
@@ -382,7 +384,7 @@
     const input = document.createElement("input");
     input.type = "text";
     input.className = "add-owner-input";
-    input.placeholder = graphConfigured() ? "Search directory…" : "Type a name…";
+    input.placeholder = graphConfigured() ? "Search directory" : "Type a name";
     input.autocomplete = "off";
 
     const wrap = document.createElement("span");
@@ -400,10 +402,14 @@
     btn.before(wrap);
     const originalLabel = btn.getAttribute("aria-label");
     const originalOnClick = btn.onclick;
+    btn.innerHTML = CHECK_SVG;
+    btn.classList.add("is-confirm");
     btn.setAttribute("aria-label", "Confirm add owner");
     btn.onclick = () => addName(input.value);
     const keepFocus = (e) => e.preventDefault();
     btn.addEventListener("mousedown", keepFocus);
+    const updateArmed = () => btn.classList.toggle("has-value", input.value.trim().length > 0);
+    input.addEventListener("input", updateArmed);
     input.focus();
 
     let cancelled = false;
@@ -411,6 +417,8 @@
       if (cancelled) return;
       cancelled = true;
       wrap.remove();
+      btn.innerHTML = PLUS_SVG;
+      btn.classList.remove("is-confirm", "has-value");
       btn.setAttribute("aria-label", originalLabel);
       btn.onclick = originalOnClick;
       btn.removeEventListener("mousedown", keepFocus);
@@ -465,7 +473,11 @@
     }
 
     input.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") restoreButton();
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        restoreButton();
+      }
       if (e.key === "Enter") addName(input.value);
     });
     input.addEventListener("blur", () => {
@@ -511,10 +523,81 @@
     const addBtn = document.createElement("button");
     addBtn.type = "button";
     addBtn.className = "add-owner-btn";
-    addBtn.innerHTML =
-      '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" /></svg>';
+    addBtn.innerHTML = PLUS_SVG;
     addBtn.setAttribute("aria-label", "Add an owner");
     addBtn.onclick = () => startAddOwner(addBtn, ensureOwnersArray, onToggle);
+    trailing.appendChild(addBtn);
+
+    return trailing;
+  }
+
+  // Adds a new bullet directly into the objective <ul>, typed inline as
+  // if it were becoming the next list item — the + button (top-right of
+  // the "Objective" heading, same spot as the owner control) swaps to a
+  // check while typing so it can also confirm the entry on click.
+  function startAddDetail(btn, ul, getDetailArray, onToggle) {
+    const li = document.createElement("li");
+    li.className = "sdetail-input-row";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "sdetail-input";
+    input.placeholder = "Type a detail";
+    input.autocomplete = "off";
+    li.appendChild(input);
+    ul.appendChild(li);
+    input.focus();
+
+    const originalLabel = btn.getAttribute("aria-label");
+    const originalOnClick = btn.onclick;
+    btn.innerHTML = CHECK_SVG;
+    btn.classList.add("is-confirm");
+    btn.setAttribute("aria-label", "Confirm add detail");
+    btn.onclick = () => addDetail(input.value);
+    const keepFocus = (e) => e.preventDefault();
+    btn.addEventListener("mousedown", keepFocus);
+    input.addEventListener("input", () => btn.classList.toggle("has-value", input.value.trim().length > 0));
+
+    let cancelled = false;
+    function restoreButton() {
+      if (cancelled) return;
+      cancelled = true;
+      li.remove();
+      btn.innerHTML = PLUS_SVG;
+      btn.classList.remove("is-confirm", "has-value");
+      btn.setAttribute("aria-label", originalLabel);
+      btn.onclick = originalOnClick;
+      btn.removeEventListener("mousedown", keepFocus);
+    }
+
+    function addDetail(text) {
+      const trimmed = text.trim();
+      if (!trimmed) return restoreButton();
+      getDetailArray().push(trimmed);
+      cancelled = true; // the whole drawer re-renders via onToggle
+      if (onToggle) onToggle();
+    }
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        restoreButton();
+      }
+      if (e.key === "Enter") addDetail(input.value);
+    });
+    input.addEventListener("blur", () => setTimeout(restoreButton, 150));
+  }
+
+  function buildAddDetailControl(ul, getDetailArray, onToggle) {
+    const trailing = document.createElement("span");
+    trailing.className = "add-owner-trailing";
+
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "add-owner-btn";
+    addBtn.innerHTML = PLUS_SVG;
+    addBtn.setAttribute("aria-label", "Add a detail");
+    addBtn.onclick = () => startAddDetail(addBtn, ul, getDetailArray, onToggle);
     trailing.appendChild(addBtn);
 
     return trailing;
@@ -607,18 +690,13 @@
   }
 
   // The right-hand panel for whichever sub-stage is selected.
-  function buildDetailPanel(container, { step, phase, isCurrent, ownerFallback, onToggle }) {
+  function buildDetailPanel(container, { step, phase, ownerFallback, onToggle }) {
     container.innerHTML = "";
 
     const h3 = document.createElement("h3");
     h3.className = "detail-title";
     h3.textContent = step.title;
     container.appendChild(h3);
-
-    const subline = document.createElement("div");
-    subline.className = "drawer-subline";
-    subline.innerHTML = `<span class="pill status-${step.status}">${STATUS_TEXT[step.status]}</span>`;
-    container.appendChild(subline);
 
     const col = document.createElement("div");
     col.className = "detail-col detail-col-single";
@@ -643,23 +721,35 @@
     ownerField.appendChild(buildOwnerField(ownersToShow, ensureOwnersArray, onToggle));
     col.appendChild(ownerField);
 
-    const objective = document.createElement("div");
-    objective.className = "detail-field";
-    objective.innerHTML = "<h4>Objective</h4>";
-    if (step.detail && step.detail.length) {
-      const ul = document.createElement("ul");
-      ul.className = "sdetail";
+    if (!step.detail) step.detail = [];
+
+    const ul = document.createElement("ul");
+    ul.className = "sdetail";
+    let blurbEl = null;
+    if (step.detail.length) {
       step.detail.forEach((d) => {
         const li = document.createElement("li");
         li.textContent = d;
         ul.appendChild(li);
       });
-      objective.appendChild(ul);
     } else {
-      const p = document.createElement("p");
-      p.textContent = phase.blurb;
-      objective.appendChild(p);
+      blurbEl = document.createElement("p");
+      blurbEl.textContent = phase.blurb;
     }
+
+    const objective = document.createElement("div");
+    objective.className = "detail-field";
+
+    const objectiveHeader = document.createElement("div");
+    objectiveHeader.className = "detail-field-header";
+    const objectiveHeading = document.createElement("h4");
+    objectiveHeading.textContent = "Objective";
+    objectiveHeader.appendChild(objectiveHeading);
+    objectiveHeader.appendChild(buildAddDetailControl(ul, () => step.detail, onToggle));
+    objective.appendChild(objectiveHeader);
+
+    if (blurbEl) objective.appendChild(blurbEl);
+    objective.appendChild(ul);
     col.appendChild(objective);
 
     container.appendChild(col);
@@ -739,7 +829,6 @@
     buildDetailPanel(detail, {
       step: selectedStep,
       phase,
-      isCurrent: selectedStep === currentStep,
       ownerFallback: fromGovernance ? ROADMAP.ongoing.owners : phase.owners,
       onToggle,
     });
