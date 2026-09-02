@@ -823,7 +823,15 @@ dialog#drawer::backdrop {
   .substage-nav { border-right: none; border-bottom: 1px solid var(--line); }
 }
 
-.owner-pair { display: inline-flex; align-items: center; gap: 6px; }
+.owner-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  padding: 4px 8px 4px 4px;
+}
 
 .remove-owner-btn {
   width: 15px;
