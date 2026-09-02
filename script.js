@@ -503,9 +503,7 @@
   // exactly one sub-stage is ever "active" at a time. The status circle is
   // also independently clickable to cycle not-started → in-progress →
   // complete without changing the selection logic.
-  const NAV_SUBTITLE = { done: "Complete", active: "CURRENT · IN PROGRESS", blocked: "CURRENT · BLOCKED", todo: "Not started" };
-
-  function buildNavRow(step, isSelected, onSelect, onToggle, reorderCtx, nextTitle) {
+  function buildNavRow(step, isSelected, onSelect, onToggle, reorderCtx) {
     const NEXT_STATUS = { todo: "active", active: "done", done: "todo", blocked: "todo" };
     const row = document.createElement("button");
     row.type = "button";
@@ -544,6 +542,9 @@
     check.setAttribute("role", "button");
     check.tabIndex = 0;
     check.setAttribute("aria-label", `"${step.title}" — ${STATUS_TEXT[step.status]}. Click to advance.`);
+    if (step.status === "done") {
+      check.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" /></svg>';
+    }
     const cycle = (e) => {
       e.stopPropagation();
       step.status = NEXT_STATUS[step.status] || "todo";
@@ -567,15 +568,8 @@
 
     const subtitle = document.createElement("span");
     subtitle.className = `substage-nav-subtitle status-${step.status}`;
-    subtitle.textContent = NAV_SUBTITLE[step.status];
+    subtitle.textContent = STATUS_TEXT[step.status];
     text.appendChild(subtitle);
-
-    if ((step.status === "active" || step.status === "blocked") && nextTitle) {
-      const next = document.createElement("span");
-      next.className = "substage-nav-next";
-      next.textContent = `Next: ${nextTitle}`;
-      text.appendChild(next);
-    }
 
     row.appendChild(text);
 
@@ -696,7 +690,6 @@
       const reorderCtx = fromGov
         ? { array: ROADMAP.ongoing.steps, index: i - phase.steps.length }
         : { array: phase.steps, index: i };
-      const nextTitle = displaySteps[i + 1] ? displaySteps[i + 1].title : null;
       navList.appendChild(
         buildNavRow(
           s,
@@ -706,8 +699,7 @@
             if (onToggle) onToggle();
           },
           onToggle,
-          reorderCtx,
-          nextTitle
+          reorderCtx
         )
       );
     });
