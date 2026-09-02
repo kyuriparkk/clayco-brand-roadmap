@@ -799,6 +799,22 @@ dialog#drawer::backdrop {
   border-bottom: 1px solid var(--line);
 }
 
+.detail-field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.detail-field-header h4 {
+  margin: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
 .detail-field p {
   margin: 0;
   font-size: 15.5px;
@@ -878,10 +894,10 @@ dialog#drawer::backdrop {
 .add-owner-btn:hover { border-color: var(--red-dark); color: var(--red-dark); }
 
 .add-owner-trailing {
-  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: none;
 }
 
 .add-owner-wrap { position: relative; display: inline-flex; }

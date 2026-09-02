@@ -499,6 +499,12 @@
 
       wrap.appendChild(pair);
     });
+    return wrap;
+  }
+
+  // Sits next to the "Owner" heading itself (top-right of the field),
+  // rather than trailing the chip list below it.
+  function buildAddOwnerControl(ensureOwnersArray, onToggle) {
     const trailing = document.createElement("span");
     trailing.className = "add-owner-trailing";
 
@@ -511,8 +517,7 @@
     addBtn.onclick = () => startAddOwner(addBtn, ensureOwnersArray, onToggle);
     trailing.appendChild(addBtn);
 
-    wrap.appendChild(trailing);
-    return wrap;
+    return trailing;
   }
 
   // One row in the left-hand sub-stage list — selecting it (click anywhere
@@ -619,19 +624,23 @@
     col.className = "detail-col detail-col-single";
 
     const ownersToShow = step.owners || ownerFallback || [];
+    const ensureOwnersArray = () => {
+      if (!step.owners) step.owners = [...ownersToShow];
+      return step.owners;
+    };
+
     const ownerField = document.createElement("div");
     ownerField.className = "detail-field";
-    ownerField.innerHTML = "<h4>Owner</h4>";
-    ownerField.appendChild(
-      buildOwnerField(
-        ownersToShow,
-        () => {
-          if (!step.owners) step.owners = [...ownersToShow];
-          return step.owners;
-        },
-        onToggle
-      )
-    );
+
+    const ownerHeader = document.createElement("div");
+    ownerHeader.className = "detail-field-header";
+    const ownerHeading = document.createElement("h4");
+    ownerHeading.textContent = "Owner";
+    ownerHeader.appendChild(ownerHeading);
+    ownerHeader.appendChild(buildAddOwnerControl(ensureOwnersArray, onToggle));
+    ownerField.appendChild(ownerHeader);
+
+    ownerField.appendChild(buildOwnerField(ownersToShow, ensureOwnersArray, onToggle));
     col.appendChild(ownerField);
 
     const objective = document.createElement("div");
