@@ -680,7 +680,6 @@ dialog#drawer::backdrop {
 
 .substage-nav {
   background: var(--surface-2);
-  border-right: 1px solid var(--line-strong);
   padding: 8px 16px 18px 24px;
   align-self: stretch;
 }
@@ -700,8 +699,14 @@ dialog#drawer::backdrop {
   gap: 0;
 }
 
-.substage-nav-row:not(:last-child) {
-  border-bottom: 1px solid var(--line-strong);
+.substage-nav-row:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 16px;
+  bottom: 0;
+  height: 1px;
+  background: var(--line-strong);
 }
 
 .substage-nav-row {
@@ -717,6 +722,7 @@ dialog#drawer::backdrop {
   padding: 16px 16px 16px 24px;
   font-family: inherit;
   cursor: pointer;
+  position: relative;
 }
 
 .substage-nav-row:hover { background: var(--surface-3); }
@@ -851,7 +857,7 @@ dialog#drawer::backdrop {
 
 @media (max-width: 640px) {
   .drawer-columns { grid-template-columns: 1fr; }
-  .substage-nav { border-right: none; border-bottom: 1px solid var(--line); }
+  .substage-nav { border-bottom: 1px solid var(--line); }
 }
 
 .owner-pair {
@@ -898,10 +904,10 @@ dialog#drawer::backdrop {
 }
 
 .add-owner-btn svg {
-  width: 12px;
-  height: 12px;
+  width: 15px;
+  height: 15px;
   stroke: currentColor;
-  stroke-width: 1.5px;
+  stroke-width: 2px;
   stroke-linecap: round;
   fill: none;
 }
@@ -914,12 +920,6 @@ dialog#drawer::backdrop {
 .add-owner-btn.is-confirm {
   background: var(--surface-3);
   color: var(--ink-3);
-}
-
-.add-owner-btn.is-confirm svg {
-  width: 15px;
-  height: 15px;
-  stroke-width: 2px;
 }
 
 .add-owner-btn.is-confirm:hover:not(.has-value) {
