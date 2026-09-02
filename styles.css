@@ -852,12 +852,12 @@ dialog#drawer::backdrop {
 .remove-owner-btn:hover { background: var(--red-soft); color: var(--red-dark); }
 
 .add-owner-btn {
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  border: 1.5px dashed var(--line-strong);
+  border: 1.5px solid var(--red);
   background: none;
-  color: var(--ink-3);
+  color: var(--red);
   cursor: pointer;
   flex: none;
   display: inline-flex;
@@ -867,15 +867,15 @@ dialog#drawer::backdrop {
 }
 
 .add-owner-btn svg {
-  width: 9px;
-  height: 9px;
+  width: 12px;
+  height: 12px;
   stroke: currentColor;
   stroke-width: 1.5px;
   stroke-linecap: round;
   fill: none;
 }
 
-.add-owner-btn:hover { border-color: var(--red); border-style: solid; color: var(--red-dark); }
+.add-owner-btn:hover { border-color: var(--red-dark); color: var(--red-dark); }
 
 .add-owner-wrap { position: relative; display: inline-flex; }
 
