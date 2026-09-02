@@ -556,7 +556,7 @@ dialog#drawer::backdrop {
   font-size: var(--fs-meta);
   font-weight: 700;
   padding: 3px 9px;
-  border-radius: 3px;
+  border-radius: 999px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -876,6 +876,13 @@ dialog#drawer::backdrop {
 }
 
 .add-owner-btn:hover { border-color: var(--red-dark); color: var(--red-dark); }
+
+.add-owner-trailing {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
 .add-owner-wrap { position: relative; display: inline-flex; }
 

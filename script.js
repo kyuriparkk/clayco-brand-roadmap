@@ -394,14 +394,26 @@
     menu.hidden = true;
     wrap.appendChild(menu);
 
-    btn.replaceWith(wrap);
+    // The + button stays on screen next to the input, repurposed as a
+    // "confirm" action so a typed name can be added with a click instead
+    // of only via Enter.
+    btn.before(wrap);
+    const originalLabel = btn.getAttribute("aria-label");
+    const originalOnClick = btn.onclick;
+    btn.setAttribute("aria-label", "Confirm add owner");
+    btn.onclick = () => addName(input.value);
+    const keepFocus = (e) => e.preventDefault();
+    btn.addEventListener("mousedown", keepFocus);
     input.focus();
 
     let cancelled = false;
     function restoreButton() {
       if (cancelled) return;
       cancelled = true;
-      wrap.replaceWith(btn);
+      wrap.remove();
+      btn.setAttribute("aria-label", originalLabel);
+      btn.onclick = originalOnClick;
+      btn.removeEventListener("mousedown", keepFocus);
     }
 
     function addName(name) {
@@ -487,14 +499,19 @@
 
       wrap.appendChild(pair);
     });
+    const trailing = document.createElement("span");
+    trailing.className = "add-owner-trailing";
+
     const addBtn = document.createElement("button");
     addBtn.type = "button";
     addBtn.className = "add-owner-btn";
     addBtn.innerHTML =
       '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" /></svg>';
     addBtn.setAttribute("aria-label", "Add an owner");
-    addBtn.addEventListener("click", () => startAddOwner(addBtn, ensureOwnersArray, onToggle));
-    wrap.appendChild(addBtn);
+    addBtn.onclick = () => startAddOwner(addBtn, ensureOwnersArray, onToggle);
+    trailing.appendChild(addBtn);
+
+    wrap.appendChild(trailing);
     return wrap;
   }
 
