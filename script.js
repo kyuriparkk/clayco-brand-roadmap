@@ -503,7 +503,9 @@
   // exactly one sub-stage is ever "active" at a time. The status circle is
   // also independently clickable to cycle not-started → in-progress →
   // complete without changing the selection logic.
-  function buildNavRow(step, isSelected, onSelect, onToggle, reorderCtx) {
+  const NAV_SUBTITLE = { done: "Complete", active: "CURRENT · IN PROGRESS", blocked: "CURRENT · BLOCKED", todo: "Not started" };
+
+  function buildNavRow(step, isSelected, onSelect, onToggle, reorderCtx, nextTitle) {
     const NEXT_STATUS = { todo: "active", active: "done", done: "todo", blocked: "todo" };
     const row = document.createElement("button");
     row.type = "button";
@@ -562,7 +564,28 @@
     title.className = "substage-nav-title";
     title.textContent = step.title;
     text.appendChild(title);
+
+    const subtitle = document.createElement("span");
+    subtitle.className = `substage-nav-subtitle status-${step.status}`;
+    subtitle.textContent = NAV_SUBTITLE[step.status];
+    text.appendChild(subtitle);
+
+    if ((step.status === "active" || step.status === "blocked") && nextTitle) {
+      const next = document.createElement("span");
+      next.className = "substage-nav-next";
+      next.textContent = `Next: ${nextTitle}`;
+      text.appendChild(next);
+    }
+
     row.appendChild(text);
+
+    if (isSelected) {
+      const chevron = document.createElement("span");
+      chevron.className = "substage-nav-chevron";
+      chevron.setAttribute("aria-hidden", "true");
+      chevron.innerHTML = '<svg viewBox="0 0 16 16"><path d="M6 3.5l5 4.5-5 4.5" /></svg>';
+      row.appendChild(chevron);
+    }
 
     return row;
   }
@@ -662,6 +685,10 @@
 
     const nav = document.createElement("div");
     nav.className = "substage-nav";
+    const navHeading = document.createElement("div");
+    navHeading.className = "substage-nav-heading";
+    navHeading.textContent = "Sub-stages";
+    nav.appendChild(navHeading);
     const navList = document.createElement("div");
     navList.className = "substage-nav-list";
     displaySteps.forEach((s, i) => {
@@ -669,6 +696,7 @@
       const reorderCtx = fromGov
         ? { array: ROADMAP.ongoing.steps, index: i - phase.steps.length }
         : { array: phase.steps, index: i };
+      const nextTitle = displaySteps[i + 1] ? displaySteps[i + 1].title : null;
       navList.appendChild(
         buildNavRow(
           s,
@@ -678,7 +706,8 @@
             if (onToggle) onToggle();
           },
           onToggle,
-          reorderCtx
+          reorderCtx,
+          nextTitle
         )
       );
     });
