@@ -698,6 +698,13 @@
     h3.textContent = step.title;
     container.appendChild(h3);
 
+    if (step.summary) {
+      const summary = document.createElement("p");
+      summary.className = "detail-summary";
+      summary.textContent = step.summary;
+      container.appendChild(summary);
+    }
+
     const col = document.createElement("div");
     col.className = "detail-col detail-col-single";
 
@@ -727,9 +734,28 @@
     ul.className = "sdetail";
     let blurbEl = null;
     if (step.detail.length) {
-      step.detail.forEach((d) => {
+      step.detail.forEach((d, i) => {
         const li = document.createElement("li");
-        li.textContent = d;
+
+        const row = document.createElement("span");
+        row.className = "sdetail-row";
+
+        const text = document.createElement("span");
+        text.textContent = d;
+        row.appendChild(text);
+
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "remove-owner-btn";
+        removeBtn.textContent = "×";
+        removeBtn.setAttribute("aria-label", `Remove detail: ${d}`);
+        removeBtn.addEventListener("click", () => {
+          step.detail.splice(i, 1);
+          if (onToggle) onToggle();
+        });
+        row.appendChild(removeBtn);
+
+        li.appendChild(row);
         ul.appendChild(li);
       });
     } else {

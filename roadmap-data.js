@@ -78,11 +78,13 @@ const ROADMAP = {
       steps: [
         {
           title: "Interview synthesis",
+          summary: "Turn completed stakeholder interviews into clear branding takeaways.",
           status: "done",
           detail: ["Organize completed interview findings", "Translate findings into branding implications"],
         },
         {
           title: "Audience research",
+          summary: "Map who we're building the brand for and how they see us today.",
           status: "done",
           detail: [
             "Identify primary and secondary audiences (Clients / Employees & recruits / Partners / Communities)",
@@ -92,6 +94,7 @@ const ROADMAP = {
         },
         {
           title: "Competitors",
+          summary: "See how we stack up against direct and indirect competitors.",
           status: "done",
           detail: [
             "Identify direct and indirect competitors",
@@ -100,6 +103,7 @@ const ROADMAP = {
         },
         {
           title: "Review current brand",
+          summary: "Catalog every existing brand touchpoint and where it falls short.",
           status: "done",
           detail: [
             "Logo & variations / Typography / imagery / graphic style / websites / social media / presentations, proposals / construction tools / signage",
@@ -108,6 +112,7 @@ const ROADMAP = {
         },
         {
           title: "Research synthesis",
+          summary: "Combine research findings into one prioritized strategic brief.",
           status: "active",
           detail: ["Roll findings from all research streams into a single synthesis"],
         },
@@ -130,6 +135,7 @@ const ROADMAP = {
       steps: [
         {
           title: "Brand foundation",
+          summary: "Define why we exist, where we're going, and what we stand for.",
           status: "active",
           detail: [
             "Purpose / Mission / Vision / Promise / Values",
@@ -138,11 +144,13 @@ const ROADMAP = {
         },
         {
           title: "Positioning",
+          summary: "Pinpoint how we want to be seen relative to the market and competitors.",
           status: "todo",
           detail: ["Market / Audience / Differentiators"],
         },
         {
           title: "Architecture",
+          summary: "Decide how the six business units relate to each other under one brand.",
           status: "todo",
           detail: [
             "Features and relationships of the 6 units",
@@ -152,6 +160,7 @@ const ROADMAP = {
         },
         {
           title: "Language",
+          summary: "Set naming rules and the voice we'll use to talk about the brand.",
           status: "todo",
           detail: [
             "Naming: company / service / program / product / descriptors / domain / social handle",
@@ -178,31 +187,37 @@ const ROADMAP = {
       steps: [
         {
           title: "Creative direction",
+          summary: "Translate brand strategy into visual principles designers can apply.",
           status: "todo",
           detail: ["Brand strategy → visual principles", "Distinctiveness / accessibility"],
         },
         {
           title: "Logo",
+          summary: "Design the primary, secondary, and unit-level logo family.",
           status: "todo",
           detail: ["Primary / secondary / small / colors / units logo family", "(Dohyoung, Sam A.)"],
         },
         {
           title: "Typography",
+          summary: "Choose the typefaces and hierarchy used across every touchpoint.",
           status: "todo",
           detail: ["Primary title / secondary / font hierarchy / licensing"],
         },
         {
           title: "Colors",
+          summary: "Define the palette for print, digital, and functional use.",
           status: "todo",
           detail: ["Primary / secondary / functional / digital / print / contrast requirements"],
         },
         {
           title: "Imagery",
+          summary: "Set the direction for photography and video across the brand.",
           status: "todo",
           detail: ["Photography direction / project / people", "Video direction / requirements"],
         },
         {
           title: "Graphic system",
+          summary: "Build the shared visual toolkit — grids, icons, motion, and templates.",
           status: "todo",
           detail: [
             "Grid / layout",
@@ -219,6 +234,7 @@ const ROADMAP = {
         },
         {
           title: "Digital design system",
+          summary: "Create the reusable component library for digital products.",
           status: "todo",
           detail: [
             "Typography",
@@ -242,12 +258,42 @@ const ROADMAP = {
       risks: [],
       latestUpdate: null,
       steps: [
-        { title: "Website research", status: "todo", detail: [] },
-        { title: "Requirements", status: "todo", detail: [] },
-        { title: "Web architecture", status: "todo", detail: [] },
-        { title: "Wireframe / prototypes", status: "todo", detail: [] },
-        { title: "Content strategy / production", status: "todo", detail: [] },
-        { title: "Test / launch prep", status: "todo", detail: [] },
+        {
+          title: "Website research",
+          summary: "Audit the current site and gather input on what the new one needs to do.",
+          status: "todo",
+          detail: [],
+        },
+        {
+          title: "Requirements",
+          summary: "Define the features and content the new site must support.",
+          status: "todo",
+          detail: [],
+        },
+        {
+          title: "Web architecture",
+          summary: "Map out the site's structure and how pages connect.",
+          status: "todo",
+          detail: [],
+        },
+        {
+          title: "Wireframe / prototypes",
+          summary: "Sketch and test the site's layout before visual design.",
+          status: "todo",
+          detail: [],
+        },
+        {
+          title: "Content strategy / production",
+          summary: "Plan and write the content that will populate the site.",
+          status: "todo",
+          detail: [],
+        },
+        {
+          title: "Test / launch prep",
+          summary: "QA the site and get it ready to go live.",
+          status: "todo",
+          detail: [],
+        },
       ],
     },
     {
@@ -264,6 +310,7 @@ const ROADMAP = {
       steps: [
         {
           title: "Brand guideline",
+          summary: "Document the full brand system so anyone can apply it correctly.",
           status: "todo",
           detail: [
             "Brand strategy, architecture, naming, verbal identity",
@@ -274,6 +321,7 @@ const ROADMAP = {
         },
         {
           title: "Templates / tools",
+          summary: "Build ready-to-use templates for everyday brand applications.",
           status: "todo",
           detail: [
             "Presentation / proposal / documents / email / social / recruiting",
@@ -294,7 +342,14 @@ const ROADMAP = {
       dependsOn: ["brand-guidelines"],
       risks: [],
       latestUpdate: null,
-      steps: [{ title: "Details to be defined", status: "todo", detail: [] }],
+      steps: [
+        {
+          title: "Details to be defined",
+          summary: "Scope the rollout plan once brand guidelines are finalized.",
+          status: "todo",
+          detail: [],
+        },
+      ],
     },
     {
       id: "launch",
@@ -310,10 +365,30 @@ const ROADMAP = {
       risks: [],
       latestUpdate: null,
       steps: [
-        { title: "Training", status: "todo", detail: [] },
-        { title: "Internal launch", status: "todo", detail: [] },
-        { title: "External launch", status: "todo", detail: [] },
-        { title: "Feedback / updates", status: "todo", detail: [] },
+        {
+          title: "Training",
+          summary: "Prepare teams to understand and apply the new brand.",
+          status: "todo",
+          detail: [],
+        },
+        {
+          title: "Internal launch",
+          summary: "Introduce the new brand to employees company-wide.",
+          status: "todo",
+          detail: [],
+        },
+        {
+          title: "External launch",
+          summary: "Reveal the new brand to clients, partners, and the public.",
+          status: "todo",
+          detail: [],
+        },
+        {
+          title: "Feedback / updates",
+          summary: "Gather early feedback and make adjustments post-launch.",
+          status: "todo",
+          detail: [],
+        },
       ],
     },
   ],
@@ -331,6 +406,7 @@ const ROADMAP = {
     steps: [
       {
         title: "Brand Governance & Measurement",
+        summary: "Keep the brand consistent and on-strategy after launch.",
         status: "todo",
         detail: ["Ongoing stewardship of the brand system once it's live."],
       },

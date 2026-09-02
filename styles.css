@@ -789,6 +789,14 @@ dialog#drawer::backdrop {
   color: var(--ink);
 }
 
+.detail-summary {
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--ink-3);
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+
 .detail-col-single { margin-top: 40px; }
 
 .detail-field { margin-bottom: 40px; }
@@ -835,6 +843,13 @@ dialog#drawer::backdrop {
   font-size: 15.5px;
   color: var(--ink-2);
   line-height: 1.6;
+}
+
+.sdetail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .sdetail-input-row { padding-top: 4px; }
