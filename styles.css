@@ -256,7 +256,7 @@ section.timeline-section {
   z-index: 2;
   display: grid;
   grid-template-columns: repeat(10, 1fr);
-  row-gap: 8px;
+  row-gap: 4px;
   column-gap: 0;
 }
 
@@ -266,12 +266,12 @@ section.timeline-section {
     min-height: 0;
     margin-top: 6px;
     /* 7 phases, sharing whatever height is available. */
-    grid-template-rows: repeat(7, minmax(34px, 1fr));
+    grid-template-rows: repeat(7, minmax(40px, 1fr));
   }
 }
 
 .stage {
-  min-height: 46px;
+  min-height: 52px;
   border-radius: 0;
   border: none;
   padding: 6px 16px;
